@@ -11,8 +11,11 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../lib/simulatedEndpoints";
 import type { LoginResponse } from "../../types/auth.types";
+import useNotification from "../../hooks/useNotification";
+import NotificationSnackbar from "../../layouts/components/NotificationSnackbar";
 
 const Login: React.FC = () => {
+  const { showNotification, notification, handleAutoClose } = useNotification();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -42,53 +45,71 @@ const Login: React.FC = () => {
         // aquí optamos por enviar a '/' como fallback
         navigate("/", { replace: true });
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error en login:", err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+          ? err
+          : "Error en login";
+      showNotification(message, "error", 99999);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Box
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      minHeight="100dvh"
-      bgcolor="#f5f5f5"
-    >
-      <Paper elevation={3} sx={{ p: 4, minWidth: 320 }}>
-        <Typography variant="h5" mb={2} align="center">
-          Iniciar Sesión
-        </Typography>
-        <form onSubmit={handleSubmit}>
-          <TextField
-            label="Correo electrónico"
-            type="email"
-            fullWidth
-            margin="normal"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <TextField
-            label="Contraseña"
-            type="password"
-            fullWidth
-            margin="normal"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+    <>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100dvh"
+        bgcolor="#f5f5f5"
+      >
+        <Paper elevation={3} sx={{ p: 4, minWidth: 320 }}>
+          <Typography variant="h5" mb={2} align="center">
+            Iniciar Sesión
+          </Typography>
+          <form onSubmit={handleSubmit}>
+            <TextField
+              label="Correo electrónico"
+              type="email"
+              fullWidth
+              margin="normal"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <TextField
+              label="Contraseña"
+              type="password"
+              fullWidth
+              margin="normal"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
 
-          <Box mt={2} display="flex" justifyContent="center">
-            <Button type="submit" variant="contained" color="primary" fullWidth>
-              {loading ? <CircularProgress size={24} /> : "Entrar"}
-            </Button>
-          </Box>
-        </form>
-      </Paper>
-    </Box>
+            <Box mt={2} display="flex" justifyContent="center">
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
+              >
+                {loading ? <CircularProgress size={24} /> : "Entrar"}
+              </Button>
+            </Box>
+          </form>
+        </Paper>
+      </Box>
+      <NotificationSnackbar
+        notification={notification}
+        onClose={handleAutoClose}
+      />
+    </>
   );
 };
 
