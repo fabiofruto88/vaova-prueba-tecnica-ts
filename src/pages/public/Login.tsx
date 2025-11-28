@@ -7,41 +7,45 @@ import {
   Paper,
   CircularProgress,
 } from "@mui/material";
-import { useRequest } from "../../hooks/useRequest";
 import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { login } from "../../lib/simulatedEndpoints";
+import type { LoginResponse } from "../../types/auth.types";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Hooks para peticiones y autenticación
-  const { loadReq, loading, error } = useRequest();
+  // Hooks para autenticación
   const { saveLoginData } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       // Hacer petición al endpoint de login
-      const loginData = {
-        email,
-        password,
-      };
+      setLoading(true);
+      const response: LoginResponse = await login(email, password);
 
-      // Llamar al endpoint sin autenticación (requiresAuth = false)
-      const response = await loadReq("login", false, "POST", loginData);
-      console.log("Respuesta del login:", response);
-      // Guardar datos de login en cookies usando useAuth
+      // Guardar datos de login en el contexto/auth
       saveLoginData(response);
 
-      // Verificar que el role se guardó correctamente
-      console.log("Usuario logueado:", response);
-
-      /*  // Redirigir al dashboard o página principal
-      window.location.href = "/"; */
+      // Redirigir según rol
+      const role = response.user?.role;
+      if (role === "hotel") {
+        navigate("/hotels", { replace: true });
+      } else if (role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        // Si no tiene rol conocido, dejar en la misma página o enviar a '/'
+        // aquí optamos por enviar a '/' como fallback
+        navigate("/", { replace: true });
+      }
     } catch (err) {
-      // El error ya está manejado por el hook useRequest
       console.error("Error en login:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -76,19 +80,9 @@ const Login: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          {error && (
-            <Typography color="error" variant="body2" mt={1}>
-              {error}
-            </Typography>
-          )}
+
           <Box mt={2} display="flex" justifyContent="center">
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={loading}
-              fullWidth
-            >
+            <Button type="submit" variant="contained" color="primary" fullWidth>
               {loading ? <CircularProgress size={24} /> : "Entrar"}
             </Button>
           </Box>
