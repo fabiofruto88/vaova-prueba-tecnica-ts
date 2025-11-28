@@ -1,5 +1,5 @@
 // src/App.tsx
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import PublicLayout from "./layouts/PublicLayout";
 import AuthenticatedLayout from "./layouts/AuthenticatedLayout";
@@ -8,13 +8,11 @@ import NotFound from "./pages/NotFound";
 import NoPermission from "./pages/NoPermission";
 
 function App() {
-  // Separar rutas por layout
   const publicRoutes = routes.filter((r) => r.layout === "public");
   const authRoutes = routes.filter((r) => r.layout === "authenticated");
 
   return (
     <Routes>
-      {/* Rutas públicas con PublicLayout */}
       <Route element={<PublicLayout />}>
         {publicRoutes.map((route) => (
           <Route
@@ -29,7 +27,6 @@ function App() {
         ))}
       </Route>
 
-      {/* Rutas autenticadas con AuthenticatedLayout */}
       <Route element={<AuthenticatedLayout />}>
         {authRoutes.map((route) => (
           <Route

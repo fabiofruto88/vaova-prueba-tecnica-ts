@@ -1,20 +1,12 @@
 // src/pages/Dashboard.tsx
 
 import { useNavigate } from "react-router-dom";
-import {
-  Box,
-  Typography,
-  Button,
-  Card,
-  CardContent,
-  Grid,
-  Chip,
-} from "@mui/material";
+import { Box, Typography, Card, CardContent, Grid, Chip } from "@mui/material";
 import routes from "../../config/routes.config";
 import { useAuth } from "../../context/AuthContext";
 
 export default function Dashboard() {
-  const { user, logout, hasModule, getModules } = useAuth();
+  const { user, hasModule, getModules } = useAuth();
   const navigate = useNavigate();
 
   // Filtrar rutas a las que tiene acceso
@@ -40,9 +32,6 @@ export default function Dashboard() {
             Bienvenido, {user?.name}
           </Typography>
         </div>
-        <Button variant="outlined" color="error" onClick={logout}>
-          Cerrar Sesión
-        </Button>
       </Box>
 
       {/* Info del usuario */}

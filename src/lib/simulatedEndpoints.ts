@@ -13,6 +13,10 @@ import {
   simulateNetworkDelay,
 } from "../utils/localStorage";
 
+/**
+ * POST /api/auth/register
+ * Nota: Este endpoint espera que el avatar ya venga como base64
+ */
 export const register = async (
   data: RegisterRequest
 ): Promise<LoginResponse> => {
@@ -29,15 +33,15 @@ export const register = async (
     } as ApiError;
   }
 
-  // Crear nuevo usuario
+  // Crear nuevo usuario (solo hoteles pueden registrarse)
   const newUser: User = {
     id: `user-${Date.now()}`,
     name: data.name,
     email: data.email,
-    password: data.password, // En producción encriptar
-    role: "hotel", // Por defecto hotel, admin se asigna manualmente
+    password: data.password,
+    role: "hotel", // Solo hoteles se pueden registrar
     modules: [],
-    avatar: data.avatar,
+    avatar: data.avatar, // Ya viene como base64
     createdAt: new Date().toISOString(),
   };
 

@@ -19,12 +19,19 @@ export interface LoginResponse {
   refreshToken?: string;
   expiresIn?: number;
 }
-
+export interface RegisterFormData {
+  email: string;
+  password: string;
+  confirmPassword?: string;
+  name: string;
+  acceptTerms: boolean;
+  avatar?: File | null;
+}
 export interface RegisterRequest {
   name: string;
   email: string;
   password: string;
-  avatar?: string;
+  avatar?: string; // en base 64
 }
 
 export interface Hotel {

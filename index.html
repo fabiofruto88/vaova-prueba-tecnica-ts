@@ -1,10 +1,82 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>base-ts</title>
+    <title>Vaova — Gestión de hoteles y planes turísticos</title>
+    <meta
+      name="description"
+      content="Vaova es una aplicación web para gestionar hoteles asociados a planes turísticos: perfiles de hotel con galería, logotipo, calificación, creación y edición, gestión de inventario y listados."
+    />
+    <meta
+      name="keywords"
+      content="hoteles, gestión de hoteles, inventario hotelero, reservas, galería de imágenes, logotipo, calificación, planes turísticos, administración"
+    />
+    <meta name="author" content="Vaova" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="/index.html" />
+    <meta name="theme-color" content="#0b74da" />
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="Vaova" />
+    <meta
+      property="og:title"
+      content="Vaova — Gestión de hoteles y planes turísticos"
+    />
+    <meta
+      property="og:description"
+      content="Administra hoteles, galerías, logotipos, calificaciones e inventario para ofrecerlos en tus planes turísticos."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="/" />
+    <meta property="og:image" content="/logo.svg" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@Vaova" />
+    <meta
+      name="twitter:title"
+      content="Vaova — Gestión de hoteles y planes turísticos"
+    />
+    <meta
+      name="twitter:description"
+      content="Administra hoteles, galerías, logotipos, calificaciones e inventario para ofrecerlos en tus planes turísticos."
+    />
+    <meta name="twitter:image" content="/logo.svg" />
+
+    <!-- JSON-LD: WebApplication + Organization -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "name": "Vaova",
+            "url": "/",
+            "description": "Plataforma para gestionar hoteles asociados a planes turísticos: perfiles, galerías, inventario y más.",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "{url}?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "SoftwareApplication",
+            "name": "Vaova",
+            "operatingSystem": "Web",
+            "applicationCategory": "BusinessApplication",
+            "description": "Gestiona hoteles, perfiles, galerías de imágenes, logotipos, calificaciones, creación y edición de inventario, y listados de hoteles.",
+            "url": "/"
+          },
+          {
+            "@type": "Organization",
+            "name": "Vaova",
+            "url": "/"
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

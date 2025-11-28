@@ -1,22 +1,11 @@
-// src/config/routes.config.tsx
 import type { RouteConfig } from "../types/auth.types";
 
-// Layouts
-import PublicLayout from "../layouts/PublicLayout";
-import AuthenticatedLayout from "../layouts/AuthenticatedLayout";
-
-// Páginas públicas
 import Home from "../pages/public/Home";
 import Login from "../pages/public/Login";
 import Dashboard from "../pages/admin/Dashboard";
-/* import Register from "../pages/public/Register"; */
-
-// Páginas autenticadas
+import Register from "../pages/public/register";
 
 export const routes: RouteConfig[] = [
-  // ==========================================
-  // RUTAS PÚBLICAS (con PublicLayout)
-  // ==========================================
   {
     path: "/",
     component: <Home />,
@@ -31,13 +20,13 @@ export const routes: RouteConfig[] = [
     layout: "public",
     name: "Login",
   },
-  /*   {
+  {
     path: "/register",
     component: <Register />,
     isPublic: true,
     layout: "public",
     name: "Registrarse",
-  }, */
+  },
 
   // ==========================================
   // RUTAS AUTENTICADAS (con AuthenticatedLayout)
