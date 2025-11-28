@@ -2,16 +2,15 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { ThemeProvider, CssBaseline } from "@mui/material";
 import { AuthProvider } from "./context/AuthContext"; // 👈 IMPORTAR
 import App from "./App";
-import theme from "./utils/theme";
+
 import { seedDatabase } from "./lib/simulatedEndpoints";
+import { ThemeProvider } from "./context/theme-context";
 seedDatabase();
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <ThemeProvider>
       <BrowserRouter>
         {/* 👇 AuthProvider DENTRO de BrowserRouter */}
         <AuthProvider>
