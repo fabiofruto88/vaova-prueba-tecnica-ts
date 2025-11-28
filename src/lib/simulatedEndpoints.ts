@@ -1,8 +1,11 @@
 import type {
+  AdminStats,
   ApiError,
   Hotel,
+  HotelWithRooms,
   LoginResponse,
   RegisterRequest,
+  Room,
   User,
 } from "../types/auth.types";
 import { STORAGE_KEYS, TOKEN_EXPIRATION } from "../utils/constants";
@@ -12,6 +15,7 @@ import {
   saveToStorage,
   simulateNetworkDelay,
 } from "../utils/localStorage";
+import { calculateHotelScore } from "../utils/services";
 
 /**
  * POST /api/auth/register
@@ -135,9 +139,6 @@ export const logout = async (): Promise<{ message: string }> => {
   return { message: "Logout successful" };
 };
 
-/**
- * GET /api/auth/me
- */
 export const getCurrentUser = async (): Promise<Omit<User, "password">> => {
   await simulateNetworkDelay(200);
 
@@ -211,12 +212,15 @@ export const getHotelById = async (id: string): Promise<Hotel> => {
 /**
  * POST /api/hotels
  */
+
+/**
+ * POST /api/hotels
+ * Crear hotel con score calculado automáticamente
+ */
 export const createHotel = async (
-  hotelData: Omit<Hotel, "id" | "createdAt" | "updatedAt">
+  hotelData: Omit<Hotel, "id" | "createdAt" | "updatedAt" | "score">
 ): Promise<Hotel> => {
   await simulateNetworkDelay();
-
-  // Verificar autenticación
   await getCurrentUser();
 
   const hotels = getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
@@ -224,6 +228,7 @@ export const createHotel = async (
   const newHotel: Hotel = {
     ...hotelData,
     id: `hotel-${Date.now()}`,
+    score: 0, // Se calculará cuando agreguen habitaciones
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -236,14 +241,13 @@ export const createHotel = async (
 
 /**
  * PUT /api/hotels/:id
+ * Actualizar hotel y recalcular score
  */
 export const updateHotel = async (
   id: string,
-  hotelData: Partial<Omit<Hotel, "id" | "createdAt" | "updatedAt">>
+  hotelData: Partial<Omit<Hotel, "id" | "createdAt" | "updatedAt" | "score">>
 ): Promise<Hotel> => {
   await simulateNetworkDelay();
-
-  // Verificar autenticación
   await getCurrentUser();
 
   const hotels = getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
@@ -257,9 +261,14 @@ export const updateHotel = async (
     } as ApiError;
   }
 
+  // Recalcular score
+  const newStars = hotelData.stars || hotels[index].stars;
+  const newScore = calculateHotelScore(id, newStars);
+
   const updatedHotel: Hotel = {
     ...hotels[index],
     ...hotelData,
+    score: newScore,
     updatedAt: new Date().toISOString(),
   };
 
@@ -267,6 +276,26 @@ export const updateHotel = async (
   saveToStorage(STORAGE_KEYS.HOTELS, hotels);
 
   return updatedHotel;
+};
+
+/**
+ * GET /api/hotels/:id/full
+ * Obtener hotel con sus habitaciones
+ */
+export const getHotelWithRooms = async (
+  id: string
+): Promise<HotelWithRooms> => {
+  await simulateNetworkDelay();
+
+  const hotel = await getHotelById(id);
+  const rooms = getFromStorage<Room>(STORAGE_KEYS.ROOMS).filter(
+    (r) => r.hotelId === id
+  );
+
+  return {
+    ...hotel,
+    rooms,
+  };
 };
 
 /*
@@ -292,6 +321,208 @@ export const deleteHotel = async (id: string): Promise<{ message: string }> => {
   saveToStorage(STORAGE_KEYS.HOTELS, filtered);
 
   return { message: "Hotel deleted successfully" };
+};
+
+// ==================== ROOM ENDPOINTS ====================
+
+/**
+ * GET /api/hotels/:hotelId/rooms
+ */
+export const getRoomsByHotel = async (hotelId: string): Promise<Room[]> => {
+  await simulateNetworkDelay();
+
+  const rooms = getFromStorage<Room>(STORAGE_KEYS.ROOMS);
+  return rooms.filter((room) => room.hotelId === hotelId);
+};
+
+/**
+ * GET /api/rooms/:id
+ */
+export const getRoomById = async (id: string): Promise<Room> => {
+  await simulateNetworkDelay();
+
+  const rooms = getFromStorage<Room>(STORAGE_KEYS.ROOMS);
+  const room = rooms.find((r) => r.id === id);
+
+  if (!room) {
+    throw {
+      error: true,
+      message: "Room not found",
+      statusCode: 404,
+    } as ApiError;
+  }
+
+  return room;
+};
+
+/**
+ * POST /api/hotels/:hotelId/rooms
+ * Crear habitación y recalcular score del hotel
+ */
+export const createRoom = async (
+  hotelId: string,
+  roomData: Omit<Room, "id" | "hotelId" | "createdAt" | "updatedAt">
+): Promise<Room> => {
+  await simulateNetworkDelay();
+  await getCurrentUser();
+
+  // Verificar que el hotel existe
+  await getHotelById(hotelId);
+
+  const rooms = getFromStorage<Room>(STORAGE_KEYS.ROOMS);
+
+  const newRoom: Room = {
+    ...roomData,
+    id: `room-${Date.now()}`,
+    hotelId,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  rooms.push(newRoom);
+  saveToStorage(STORAGE_KEYS.ROOMS, rooms);
+
+  // Recalcular score del hotel
+  const hotels = getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
+  const hotelIndex = hotels.findIndex((h) => h.id === hotelId);
+  if (hotelIndex !== -1) {
+    hotels[hotelIndex].score = calculateHotelScore(
+      hotelId,
+      hotels[hotelIndex].stars
+    );
+    saveToStorage(STORAGE_KEYS.HOTELS, hotels);
+  }
+
+  return newRoom;
+};
+
+/**
+ * PUT /api/rooms/:id
+ * Actualizar habitación y recalcular score del hotel
+ */
+export const updateRoom = async (
+  id: string,
+  roomData: Partial<Omit<Room, "id" | "hotelId" | "createdAt" | "updatedAt">>
+): Promise<Room> => {
+  await simulateNetworkDelay();
+  await getCurrentUser();
+
+  const rooms = getFromStorage<Room>(STORAGE_KEYS.ROOMS);
+  const index = rooms.findIndex((r) => r.id === id);
+
+  if (index === -1) {
+    throw {
+      error: true,
+      message: "Room not found",
+      statusCode: 404,
+    } as ApiError;
+  }
+
+  const updatedRoom: Room = {
+    ...rooms[index],
+    ...roomData,
+    updatedAt: new Date().toISOString(),
+  };
+
+  rooms[index] = updatedRoom;
+  saveToStorage(STORAGE_KEYS.ROOMS, rooms);
+
+  // Recalcular score del hotel
+  const hotelId = updatedRoom.hotelId;
+  const hotels = getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
+  const hotelIndex = hotels.findIndex((h) => h.id === hotelId);
+  if (hotelIndex !== -1) {
+    hotels[hotelIndex].score = calculateHotelScore(
+      hotelId,
+      hotels[hotelIndex].stars
+    );
+    saveToStorage(STORAGE_KEYS.HOTELS, hotels);
+  }
+
+  return updatedRoom;
+};
+
+/**
+ * DELETE /api/rooms/:id
+ * Eliminar habitación y recalcular score del hotel
+ */
+export const deleteRoom = async (id: string): Promise<{ message: string }> => {
+  await simulateNetworkDelay();
+  await getCurrentUser();
+
+  const rooms = getFromStorage<Room>(STORAGE_KEYS.ROOMS);
+  const room = rooms.find((r) => r.id === id);
+
+  if (!room) {
+    throw {
+      error: true,
+      message: "Room not found",
+      statusCode: 404,
+    } as ApiError;
+  }
+
+  const filtered = rooms.filter((r) => r.id !== id);
+  saveToStorage(STORAGE_KEYS.ROOMS, filtered);
+
+  // Recalcular score del hotel
+  const hotelId = room.hotelId;
+  const hotels = getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
+  const hotelIndex = hotels.findIndex((h) => h.id === hotelId);
+  if (hotelIndex !== -1) {
+    hotels[hotelIndex].score = calculateHotelScore(
+      hotelId,
+      hotels[hotelIndex].stars
+    );
+    saveToStorage(STORAGE_KEYS.HOTELS, hotels);
+  }
+
+  return { message: "Room deleted successfully" };
+};
+
+// ==================== ADMIN ENDPOINTS ====================
+
+/**
+ * GET /api/admin/stats
+ * Obtener estadísticas generales
+ */
+export const getAdminStats = async (): Promise<AdminStats> => {
+  await simulateNetworkDelay();
+
+  // Verificar que sea admin
+  const user = await getCurrentUser();
+  if (user.role !== "admin") {
+    throw {
+      error: true,
+      message: "Unauthorized - Admin only",
+      statusCode: 403,
+    } as ApiError;
+  }
+
+  const hotels = getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
+  const rooms = getFromStorage<Room>(STORAGE_KEYS.ROOMS);
+
+  // Total de habitaciones (sumando todas las disponibles)
+  const totalRooms = rooms.reduce((sum, room) => sum + room.available, 0);
+
+  // Score promedio
+  const averageScore =
+    hotels.length > 0
+      ? hotels.reduce((sum, hotel) => sum + hotel.score, 0) / hotels.length
+      : 0;
+
+  // Hoteles por estrellas
+  const hotelsByStars = {
+    "3": hotels.filter((h) => h.stars === 3).length,
+    "4": hotels.filter((h) => h.stars === 4).length,
+    "5": hotels.filter((h) => h.stars === 5).length,
+  };
+
+  return {
+    totalHotels: hotels.length,
+    totalRooms,
+    averageScore: Math.round(averageScore),
+    hotelsByStars,
+  };
 };
 
 // ==================== UTILIDADES EXTRA ====================
@@ -324,6 +555,7 @@ export const seedDatabase = (): void => {
 export const clearAllData = (): void => {
   localStorage.removeItem(STORAGE_KEYS.USERS);
   localStorage.removeItem(STORAGE_KEYS.HOTELS);
+  localStorage.removeItem(STORAGE_KEYS.ROOMS); // ← AGREGAR
   sessionStorage.removeItem(STORAGE_KEYS.SESSION);
-  console.log(" All data cleared");
+  console.log("🗑️ All data cleared");
 };

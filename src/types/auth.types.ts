@@ -1,6 +1,3 @@
-// src/types/auth.types.ts
-// ==================== TYPES & INTERFACES ====================
-
 export interface User {
   id: string;
   name: string;
@@ -34,6 +31,49 @@ export interface RegisterRequest {
   avatar?: string; // en base 64
 }
 
+export interface Room {
+  id: string;
+  hotelId: string;
+  name: string; // "Suite Presidencial"
+  description: string;
+  capacity: 1 | 2 | 3 | 4 | 6 | 8;
+  pricePerNight: number;
+  available: number; // Cantidad de habitaciones de este tipo
+  image?: string; // Base64
+  amenities: Amenity[]; // Array de amenidades
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type Amenity =
+  | "WiFi"
+  | "Minibar"
+  | "TV Smart"
+  | "Aire Acondicionado"
+  | "Room Service"
+  | "Jacuzzi"
+  | "Terraza"
+  | "Balcón"
+  | "Desayuno incluido"
+  | "Caja fuerte"
+  | "Secador de pelo"
+  | "Cafetera";
+
+export const AVAILABLE_AMENITIES: Amenity[] = [
+  "WiFi",
+  "Minibar",
+  "TV Smart",
+  "Aire Acondicionado",
+  "Room Service",
+  "Jacuzzi",
+  "Terraza",
+  "Balcón",
+  "Desayuno incluido",
+  "Caja fuerte",
+  "Secador de pelo",
+  "Cafetera",
+];
+
 export interface Hotel {
   id: string;
   name: string;
@@ -42,17 +82,26 @@ export interface Hotel {
   state: string;
   city: string;
   logo?: string;
-  stars: number;
-  rating: number; // 0-5
-  rooms: HotelRoom[];
+  stars: 3 | 4 | 5;
+  score: number; // Score calculado automáticamente (0-100)
   gallery: string[];
   createdAt: string;
   updatedAt: string;
 }
 
-export interface HotelRoom {
-  type: "single" | "double" | "queen";
-  available: number;
+export interface HotelWithRooms extends Hotel {
+  rooms: Room[];
+}
+
+export interface AdminStats {
+  totalHotels: number;
+  totalRooms: number;
+  averageScore: number;
+  hotelsByStars: {
+    "3": number;
+    "4": number;
+    "5": number;
+  };
 }
 
 export interface ApiError {
@@ -61,9 +110,6 @@ export interface ApiError {
   statusCode: number;
 }
 
-/**
- * Configuración de una ruta protegida
- */
 export interface RouteConfig {
   path: string;
   component: React.ReactElement;

@@ -1,6 +1,7 @@
 export const STORAGE_KEYS = {
   USERS: "users",
   HOTELS: "hotels",
+  ROOMS: "rooms",
   SESSION: "session",
 } as const;
 
