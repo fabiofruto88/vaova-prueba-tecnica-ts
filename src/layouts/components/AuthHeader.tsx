@@ -10,15 +10,14 @@ import {
   Box,
   Divider,
 } from "@mui/material";
-import {
-  Menu as MenuIcon,
-  Notifications,
-  AccountCircle,
-} from "@mui/icons-material";
+import { Bars3Icon } from "@heroicons/react/24/outline";
+import { Hotel as HotelIcon } from "@mui/icons-material";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
-/* import logo from "/src/img/logo.png"; */
+import { useThemeContext } from "../../context/theme-context";
+import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 
 interface AuthHeaderProps {
   onMenuClick: () => void;
@@ -26,8 +25,10 @@ interface AuthHeaderProps {
 
 export default function AuthHeader({ onMenuClick }: AuthHeaderProps) {
   const { user, logout } = useAuth();
+  const theme = useTheme();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { isDarkMode, toggleTheme } = useThemeContext();
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -43,7 +44,7 @@ export default function AuthHeader({ onMenuClick }: AuthHeaderProps) {
   };
 
   return (
-    <AppBar position="sticky" color="default" elevation={1}>
+    <AppBar position="sticky" color="inherit" elevation={0}>
       <Toolbar>
         {/* Botón menú (sidebar) */}
         <IconButton
@@ -53,27 +54,44 @@ export default function AuthHeader({ onMenuClick }: AuthHeaderProps) {
           onClick={onMenuClick}
           sx={{ mr: 2 }}
         >
-          <MenuIcon />
+          <Bars3Icon style={{ width: 24, height: 24 }} />
         </IconButton>
 
         {/* Logo */}
         <Box sx={{ display: "flex", alignItems: "center" }}>
           {/* <img src={logo} alt="Logo" style={{ height: 40, marginRight: 8 }} /> */}
-          <Typography variant="h6" component="div">
-            Campus IUB
+          <HotelIcon sx={{ color: "primary.main", fontSize: 28, mr: 1 }} />
+          <Typography variant="h6" component="div" fontWeight={800}>
+            VAOVA
           </Typography>
         </Box>
 
         <Box sx={{ flexGrow: 1 }} />
+        <IconButton onClick={toggleTheme} color="inherit">
+          {isDarkMode ? (
+            <SunIcon
+              style={{ width: 24, height: 24 }}
+              color={theme.palette.primary.dark}
+            />
+          ) : (
+            <MoonIcon
+              style={{ width: 24, height: 24 }}
+              color={theme.palette.primary.dark}
+            />
+          )}
+        </IconButton>
 
         {/* Notificaciones */}
-        <IconButton color="inherit">
-          <Notifications />
-        </IconButton>
+
+        {/*  <IconButton color="inherit">
+          <BellIcon style={{ width: 24, height: 24 }} />
+        </IconButton> */}
 
         {/* Usuario */}
         <IconButton onClick={handleMenu} color="inherit">
-          <Avatar sx={{ width: 32, height: 32 }}>
+          <Avatar
+            sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.dark }}
+          >
             {user?.name?.charAt(0) || "U"}
           </Avatar>
         </IconButton>
@@ -98,23 +116,22 @@ export default function AuthHeader({ onMenuClick }: AuthHeaderProps) {
           </Box>
           <Divider />
           <MenuItem
+            sx={{ my: 1, mx: 1, borderRadius: 2 }}
             onClick={() => {
               handleClose();
               navigate("/perfil");
             }}
           >
-            Mi Perfil
+            Mi perfil
           </MenuItem>
-          <MenuItem
-            onClick={() => {
-              handleClose();
-              navigate("/configuracion");
-            }}
-          >
-            Configuración
-          </MenuItem>
+
           <Divider />
-          <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
+          <MenuItem
+            sx={{ my: 1, mx: 1, borderRadius: 2 }}
+            onClick={handleLogout}
+          >
+            Cerrar Sesión
+          </MenuItem>
         </Menu>
       </Toolbar>
     </AppBar>

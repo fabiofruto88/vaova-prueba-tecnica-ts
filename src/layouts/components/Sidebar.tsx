@@ -11,8 +11,10 @@ import {
   Divider,
   Typography,
   Chip,
+  Button,
+  Stack,
 } from "@mui/material";
-import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -32,7 +34,7 @@ export default function Sidebar({
   onClose,
   drawerWidth = 240,
 }: SidebarProps) {
-  const { user, hasModule } = useAuth();
+  const { user, hasModule, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [openItems, setOpenItems] = useState<{ [key: string]: boolean }>({});
@@ -76,7 +78,7 @@ export default function Sidebar({
     const active = isActive(item.path);
 
     return (
-      <Box key={item.path}>
+      <Box key={item.path} sx={{ mx: 1, my: 1 }}>
         <ListItem disablePadding>
           <ListItemButton
             onClick={() => handleItemClick(item)}
@@ -84,11 +86,19 @@ export default function Sidebar({
             sx={{
               pl: 2 + level * 2,
               bgcolor: active ? "action.selected" : "transparent",
+              borderRadius: 2,
             }}
           >
-            <ListItemIcon>{item.icon}</ListItemIcon>
+            <ListItemIcon sx={{ minWidth: 24, mr: 1 }}>
+              {item.icon}
+            </ListItemIcon>
             <ListItemText primary={item.title} />
-            {hasChildren && (isOpen ? <ExpandLess /> : <ExpandMore />)}
+            {hasChildren &&
+              (isOpen ? (
+                <ChevronUpIcon style={{ width: 20, height: 20 }} />
+              ) : (
+                <ChevronDownIcon style={{ width: 20, height: 20 }} />
+              ))}
           </ListItemButton>
         </ListItem>
 
@@ -112,9 +122,14 @@ export default function Sidebar({
       sx={{
         width: drawerWidth,
         flexShrink: 0,
+        border: "none",
+
         "& .MuiDrawer-paper": {
           width: drawerWidth,
           boxSizing: "border-box",
+          borderTopRightRadius: 20,
+          borderBottomRightRadius: 20,
+          border: "none",
         },
       }}
     >
@@ -130,7 +145,39 @@ export default function Sidebar({
       <Divider />
 
       {/* Navegación */}
-      <List>{availableItems.map((item) => renderNavItem(item))}</List>
+      <Stack
+        sx={{
+          flexDirection: "column",
+          justifyContent: "space-between",
+          flex: 1,
+          //mb: 1,
+        }}
+      >
+        <List sx={{ flex: 1 }}>
+          {availableItems.map((item) => renderNavItem(item))}
+        </List>
+        <Box>
+          <Divider sx={{ width: "100%", mb: 1 }} />
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+
+              padding: 1,
+            }}
+          >
+            <Button
+              variant="outlined"
+              color="error"
+              fullWidth
+              onClick={logout}
+              sx={{ borderRadius: 2 }}
+            >
+              Cerrar Sesión
+            </Button>
+          </Box>
+        </Box>
+      </Stack>
     </Drawer>
   );
 }

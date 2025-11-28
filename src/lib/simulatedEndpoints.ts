@@ -301,7 +301,7 @@ export const seedDatabase = (): void => {
   if (users.length === 0) {
     const adminUser: User = {
       id: "user-admin",
-      name: "Admin",
+      name: "Fabio fruto",
       email: "admin@vaova.com",
       password: "admin123",
       role: "admin",

@@ -1,12 +1,12 @@
 // src/config/navigation.config.tsx
 import {
-  Dashboard as DashboardIcon,
-  People as PeopleIcon,
-  Inventory as InventoryIcon,
-  Assessment as AssessmentIcon,
-  Settings as SettingsIcon,
-  Person as PersonIcon,
-} from "@mui/icons-material";
+  HomeIcon as DashboardIcon,
+  UsersIcon as PeopleIcon,
+  ArchiveBoxIcon as InventoryIcon,
+  ChartBarIcon as AssessmentIcon,
+  Cog6ToothIcon as SettingsIcon,
+  UserIcon as PersonIcon,
+} from "@heroicons/react/24/outline";
 
 export interface NavigationItem {
   title: string;
