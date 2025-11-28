@@ -22,7 +22,7 @@ import type { LoginResponse } from "../../types/auth.types";
 import useNotification from "../../hooks/useNotification";
 import NotificationSnackbar from "../../layouts/components/NotificationSnackbar";
 import { simulateNetworkDelay } from "../../utils/localStorage";
-import backgroundImage from "/img-login2.jpg";
+import backgroundImage from "/img-login2.webp";
 
 // 🔥 Import React Hook Form
 import { useForm, Controller } from "react-hook-form";

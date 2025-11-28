@@ -31,7 +31,7 @@ import { fileToBase64 } from "../../utils/generals";
 import type { RegisterFormData, RegisterRequest } from "../../types/auth.types";
 import useNotification from "../../hooks/useNotification";
 import NotificationSnackbar from "../../layouts/components/NotificationSnackbar";
-import backgroundImage from "/img-register.png";
+import backgroundImage from "/img-register.webp";
 
 const Register: React.FC = () => {
   const { showNotification, notification, handleAutoClose } = useNotification();
