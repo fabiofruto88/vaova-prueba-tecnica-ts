@@ -5,9 +5,9 @@ import { alpha } from "@mui/material/styles";
 type StatCardProps = {
   title: string;
   value: number | string;
-  icon: React.ElementType; // a React component (SVG) to render
-  colorIcon?: string; // hex color for icon and background
-  widthIcon?: number; // icon size in px
+  icon: React.ElementType;
+  colorIcon?: string;
+  widthIcon?: number;
 };
 
 const StatCard: React.FC<StatCardProps> = ({

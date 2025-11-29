@@ -137,6 +137,34 @@ export const base64ToFile = (base64: string, filename = "file"): File => {
   return new File([u8arr], filename, { type: mime });
 };
 
+/**
+ * Convierte un data URL/base64 a un elemento `HTMLImageElement` cargado.
+ * Devuelve una Promise que resuelve con la imagen cuando se haya cargado,
+ * o se rechaza si ocurre un error al cargarla.
+ */
+export const base64ToImage = (
+  base64?: string | null
+): Promise<HTMLImageElement | null> => {
+  return new Promise((resolve, reject) => {
+    // If caller passed undefined or null, resolve with null (non-fatal).
+    if (base64 === undefined || base64 === null) {
+      resolve(null);
+      return;
+    }
+
+    if (typeof base64 !== "string" || base64.trim() === "") {
+      reject(new Error("base64 inválido"));
+      return;
+    }
+
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () =>
+      reject(new Error("Error al crear la imagen a partir de base64"));
+    img.src = base64;
+  });
+};
+
 //Example: "fabio andres fruto jimenez" -> "Fabio Andres Fruto Jimenez"
 
 export const capitalizeName = (name: string): string => {

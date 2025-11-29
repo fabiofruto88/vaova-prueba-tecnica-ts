@@ -1,11 +1,9 @@
 /* import { useNavigate } from "react-router-dom"; */
-import { Box, Typography, Grid, Container } from "@mui/material";
-/* import { useTheme } from "@mui/material/styles"; */
+import { Box, Typography, Grid, Container, Card, Stack } from "@mui/material";
 import {
   getDashboardData,
   formatRevenue,
   getScoreColor,
-  type DashboardData,
 } from "../../utils/dashboardHelpers";
 import { useAuth } from "../../context/AuthContext";
 import { useEffect, useState } from "react";
@@ -13,17 +11,75 @@ import StatCard from "../../components/cardStats";
 import Loading from "../../components/loanding";
 import { Hotel } from "@mui/icons-material";
 
+import CardTopHotel from "../../components/cardTopHotel";
+
+interface Thotels {
+  rank: number;
+  name: string;
+  location: string;
+  rating: number;
+  score: number;
+  scoreColor: string;
+  logo?: string;
+}
 export default function Dashboard() {
   const { user } = useAuth();
 
-  const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalHotels: 0,
+    activeHotels: 0,
+    totalRooms: 0,
+    occupancy: 0,
+    revenue: formatRevenue(0),
+    growth: 0,
+  });
+  const [topHotels, setTopHotels] = useState<Thotels[]>([]);
+  const [countries, setCountries] = useState<any[]>([]);
+  const [stars, setStars] = useState({ three: 0, four: 0, five: 0 });
   /*   const theme = useTheme(); */
   const loadData = async () => {
     try {
       setLoading(true);
       const dashboardData = await getDashboardData();
-      setData(dashboardData);
+
+      if (dashboardData) {
+        setStats({
+          totalHotels: dashboardData.totalHotels ?? 0,
+          activeHotels: dashboardData.activeHotels ?? 0,
+          totalRooms: dashboardData.totalRooms ?? 0,
+          occupancy: dashboardData.averageOccupancy ?? 0,
+          revenue: formatRevenue(dashboardData.monthlyRevenue || 0),
+          growth: Number(dashboardData.revenueGrowth) || 0,
+        });
+
+        setTopHotels(
+          (dashboardData.topHotels || []).map((item) => ({
+            rank: item.rank,
+            name: item.hotel.name,
+            location: `${item.hotel.city}, ${item.hotel.country}`,
+            rating: item.rating,
+            score: item.scorePercentage,
+            scoreColor: getScoreColor(item.scorePercentage),
+            logo: item?.hotel?.logo,
+          }))
+        );
+
+        setCountries(
+          (dashboardData.hotelsByCountry || []).map((item) => ({
+            name: item.country,
+            count: item.count,
+            percentage: item.percentage,
+            label: `${item.count} hoteles`,
+          }))
+        );
+
+        setStars({
+          three: dashboardData.hotelsByStars?.["3"] ?? 0,
+          four: dashboardData.hotelsByStars?.["4"] ?? 0,
+          five: dashboardData.hotelsByStars?.["5"] ?? 0,
+        });
+      }
     } catch (error) {
       console.error("Error loading dashboard:", error);
     } finally {
@@ -35,47 +91,12 @@ export default function Dashboard() {
     loadData();
   }, []);
 
-  const stats = {
-    totalHotels: data?.totalHotels,
-    activeHotels: data?.activeHotels,
-    totalRooms: data?.totalRooms,
-    occupancy: data?.averageOccupancy,
-    revenue: formatRevenue(data?.monthlyRevenue || 0),
-    growth: data?.revenueGrowth,
-  };
-
-  // Top hoteles
-  const topHotels = data?.topHotels.map((item) => ({
-    rank: item.rank,
-    name: item.hotel.name,
-    location: `${item.hotel.city}, ${item.hotel.country}`,
-    rating: item.rating,
-    score: item.scorePercentage,
-    scoreColor: getScoreColor(item.scorePercentage),
-    logo: item.hotel.logo,
-  }));
-
-  // Distribución por país
-  const countries = data?.hotelsByCountry.map((item) => ({
-    name: item.country,
-    count: item.count,
-    percentage: item.percentage,
-    label: `${item.count} hoteles`,
-  }));
-
-  // Distribución por estrellas
-  const stars = {
-    three: data?.hotelsByStars["3"],
-    four: data?.hotelsByStars["4"],
-    five: data?.hotelsByStars["5"],
-  };
-
   console.log("📊 STATS:", stats);
   console.log("🏆 TOP HOTELS:", topHotels);
   console.log("🌎 COUNTRIES:", countries);
   console.log("⭐ STARS:", stars);
   return (
-    <Container sx={{ p: 1 }} maxWidth="xl">
+    <Container sx={{ p: 1, minHeight: "100dvh" }} maxWidth="xl">
       <Box
         display="flex"
         justifyContent="space-between"
@@ -83,14 +104,14 @@ export default function Dashboard() {
         mb={4}
       >
         <div>
-          <Typography variant="h4">Dashboard</Typography>
+          <Typography variant="h4">Panel administrativo</Typography>
           <Typography variant="body1" color="text.secondary">
             Bienvenido, {user?.name}
           </Typography>
         </div>
       </Box>
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, md: 4, lg: 2 }}>
+        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
           <StatCard
             title="Total Hoteles"
             value={stats?.totalHotels || 0}
@@ -99,7 +120,7 @@ export default function Dashboard() {
             widthIcon={40}
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 4, lg: 2 }}>
+        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
           <StatCard
             title="Total Habitaciones"
             value={stats?.totalRooms || 0}
@@ -108,7 +129,7 @@ export default function Dashboard() {
             widthIcon={40}
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 4, lg: 2 }}>
+        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
           <StatCard
             title="Ocupación Promedio  (%)"
             value={stats?.occupancy || 0}
@@ -117,7 +138,7 @@ export default function Dashboard() {
             widthIcon={40}
           />
         </Grid>
-        <Grid size={{ xs: 12, md: 4, lg: 2 }}>
+        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
           <StatCard
             title="Ingreso promedio"
             value={stats?.revenue || 0}
@@ -127,7 +148,33 @@ export default function Dashboard() {
           />
         </Grid>
       </Grid>
-
+      <Stack spacing={2} my={3}>
+        <Typography variant="h6">Hoteles con Mejor Desempeño</Typography>
+        {topHotels && topHotels.length > 0 ? (
+          topHotels.map((hotel, index) => (
+            <CardTopHotel
+              key={index}
+              rank={hotel.rank}
+              logo={hotel.logo}
+              name={hotel.name}
+              location={hotel.location}
+              rating={hotel.rating}
+              score={hotel.score}
+              scoreColor={hotel.scoreColor}
+            />
+          ))
+        ) : (
+          <Card sx={{ p: 2, textAlign: "center" }} elevation={1}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              textAlign="center"
+            >
+              No hay hoteles para mostrar.
+            </Typography>
+          </Card>
+        )}
+      </Stack>
       <Loading open={loading} />
     </Container>
   );
