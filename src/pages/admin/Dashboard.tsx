@@ -1,23 +1,88 @@
 // src/pages/Dashboard.tsx
 
 import { useNavigate } from "react-router-dom";
-import { Box, Typography, Card, CardContent, Grid, Chip } from "@mui/material";
-import routes from "../../config/routes.config";
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Grid,
+  Chip,
+  Stack,
+} from "@mui/material";
+import {
+  getDashboardData,
+  formatRevenue,
+  getScoreColor,
+  type DashboardData,
+} from "../../utils/dashboardHelpers";
 import { useAuth } from "../../context/AuthContext";
+import { useEffect, useState } from "react";
+import StatCard from "../../components/cardStats";
+import { Hotel } from "@mui/icons-material";
 
 export default function Dashboard() {
-  const { user, hasModule, getModules } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  // Filtrar rutas a las que tiene acceso
-  const availableRoutes = routes.filter((route) => {
-    if (route.isPublic) return false;
-    if (!route.requiredModule) return true;
-    return hasModule(route.requiredModule);
-  });
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const dashboardData = await getDashboardData();
+      setData(dashboardData);
+    } catch (error) {
+      console.error("Error loading dashboard:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const stats = {
+    totalHotels: data?.totalHotels,
+    activeHotels: data?.activeHotels,
+    totalRooms: data?.totalRooms,
+    occupancy: data?.averageOccupancy,
+    revenue: formatRevenue(data?.monthlyRevenue || 0),
+    growth: data?.revenueGrowth,
+  };
+
+  // Top hoteles
+  const topHotels = data?.topHotels.map((item) => ({
+    rank: item.rank,
+    name: item.hotel.name,
+    location: `${item.hotel.city}, ${item.hotel.country}`,
+    rating: item.rating,
+    score: item.scorePercentage,
+    scoreColor: getScoreColor(item.scorePercentage),
+    logo: item.hotel.logo,
+  }));
+
+  // Distribución por país
+  const countries = data?.hotelsByCountry.map((item) => ({
+    name: item.country,
+    count: item.count,
+    percentage: item.percentage,
+    label: `${item.count} hoteles`,
+  }));
+
+  // Distribución por estrellas
+  const stars = {
+    three: data?.hotelsByStars["3"],
+    four: data?.hotelsByStars["4"],
+    five: data?.hotelsByStars["5"],
+  };
+
+  console.log("📊 STATS:", stats);
+  console.log("🏆 TOP HOTELS:", topHotels);
+  console.log("🌎 COUNTRIES:", countries);
+  console.log("⭐ STARS:", stars);
   return (
-    <Box sx={{ p: 4 }}>
+    <Stack sx={{ p: 1 }}>
       <Box
         display="flex"
         justifyContent="space-between"
@@ -25,72 +90,41 @@ export default function Dashboard() {
         mb={4}
       >
         <div>
-          <Typography variant="h3" gutterBottom>
-            Dashboard
-          </Typography>
-          <Typography variant="h6" color="text.secondary">
+          <Typography variant="h4">Dashboard</Typography>
+          <Typography variant="body1" color="text.secondary">
             Bienvenido, {user?.name}
           </Typography>
         </div>
       </Box>
-
-      {/* Info del usuario */}
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Tu Información
-          </Typography>
-          <Typography>Email: {user?.email}</Typography>
-          <Typography>Rol: {user?.role}</Typography>
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle2" gutterBottom>
-              Módulos disponibles:
-            </Typography>
-            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-              {getModules().map((module) => (
-                <Chip
-                  key={module}
-                  label={module}
-                  color="primary"
-                  size="small"
-                />
-              ))}
-            </Box>
-          </Box>
-        </CardContent>
-      </Card>
-
-      {/* Módulos disponibles */}
-      <Typography variant="h5" gutterBottom>
-        Rutas Disponibles
-      </Typography>
-      <Grid container spacing={2}>
-        {availableRoutes.map((route) => (
-          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={route.path}>
-            <Card
-              sx={{
-                cursor: "pointer",
-                "&:hover": { boxShadow: 6 },
-              }}
-              onClick={() => navigate(route.path)}
-            >
-              <CardContent>
-                <Typography variant="h6">{route.name || route.path}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {route.path}
-                </Typography>
-                {route.requiredModule && (
-                  <Chip
-                    label={route.requiredModule}
-                    size="small"
-                    sx={{ mt: 1 }}
-                  />
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, md: 4, lg: 2 }}>
+          <StatCard
+            title="Total Hoteles"
+            value={stats?.totalHotels || 0}
+            icon={Hotel}
+            colorIcon="#1976d2"
+            widthIcon={40}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4, lg: 2 }}>
+          <StatCard
+            title="Total Hoteles"
+            value={156}
+            icon={Hotel}
+            colorIcon="#1976d2"
+            widthIcon={40}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4, lg: 2 }}>
+          <StatCard
+            title="Total Hoteles"
+            value={156}
+            icon={Hotel}
+            colorIcon="#1976d2"
+            widthIcon={40}
+          />
+        </Grid>
       </Grid>
-    </Box>
+    </Stack>
   );
 }

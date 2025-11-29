@@ -57,20 +57,21 @@ const Login: React.FC = () => {
       setLoading(true);
 
       const response: LoginResponse = await login(email, password);
-
+      console.log(response);
       saveLoginData(response);
       simulateNetworkDelay(2000);
 
       showNotification("Inicio de sesión exitoso", "success", 2000);
-
       const role = response.user?.role;
+      console.log("Role del usuario:", role);
+      /*  
       if (role === "hotel") {
         navigate("/hotels", { replace: true });
       } else if (role === "admin") {
         navigate("/admin", { replace: true });
       } else {
         navigate("/", { replace: true });
-      }
+      } */
     } catch (err: unknown) {
       console.error("Error en login:", err);
       const message =

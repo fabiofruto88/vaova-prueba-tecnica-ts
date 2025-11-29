@@ -29,9 +29,6 @@ export default function NoPermission() {
       <Typography variant="body2" color="text.secondary" mb={3}>
         Módulos disponibles: {user?.modules.join(", ")}
       </Typography>
-      <Button variant="contained" onClick={() => navigate("/dashboard")}>
-        Volver al Dashboard
-      </Button>
     </Box>
   );
 }

@@ -27,7 +27,7 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { register as registerUser } from "../../lib/simulatedEndpoints";
-import { fileToBase64 } from "../../utils/generals";
+import { fileToBase64, imageFileToOptimizedBase64 } from "../../utils/generals";
 import type { RegisterFormData, RegisterRequest } from "../../types/auth.types";
 import useNotification from "../../hooks/useNotification";
 import NotificationSnackbar from "../../layouts/components/NotificationSnackbar";
@@ -82,7 +82,7 @@ const Register: React.FC = () => {
       // Convertir avatar a base64 si existe
       let avatarBase64: string | undefined;
       if (formData.avatar) {
-        avatarBase64 = await fileToBase64(formData.avatar);
+        avatarBase64 = await imageFileToOptimizedBase64(formData.avatar);
       }
 
       // Preparar request

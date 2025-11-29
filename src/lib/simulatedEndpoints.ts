@@ -17,10 +17,6 @@ import {
 } from "../utils/localStorage";
 import { calculateHotelScore } from "../utils/services";
 
-/**
- * POST /api/auth/register
- * Nota: Este endpoint espera que el avatar ya venga como base64
- */
 export const register = async (
   data: RegisterRequest
 ): Promise<LoginResponse> => {
@@ -38,8 +34,9 @@ export const register = async (
   }
 
   // Crear nuevo usuario (solo hoteles pueden registrarse)
+  const userId = `user-${Date.now()}`;
   const newUser: User = {
-    id: `user-${Date.now()}`,
+    id: userId,
     name: data.name,
     email: data.email,
     password: data.password,
@@ -51,6 +48,27 @@ export const register = async (
 
   users.push(newUser);
   saveToStorage(STORAGE_KEYS.USERS, users);
+
+  // ✅ Crear hotel asociado al usuario
+  const hotels = getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
+
+  const newHotel: Hotel = {
+    id: `hotel-${Date.now()}`,
+    name: data.name, // Mismo nombre del usuario
+    description: "",
+    country: "",
+    state: "",
+    city: "",
+    logo: data.avatar, // Mismo avatar como logo inicial
+    stars: 3, // Por defecto 3 estrellas
+    score: 0, // Score inicial en 0
+    gallery: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  hotels.push(newHotel);
+  saveToStorage(STORAGE_KEYS.HOTELS, hotels);
 
   // Generar tokens
   const token = generateToken(newUser.id, newUser.email);
@@ -325,9 +343,6 @@ export const deleteHotel = async (id: string): Promise<{ message: string }> => {
 
 // ==================== ROOM ENDPOINTS ====================
 
-/**
- * GET /api/hotels/:hotelId/rooms
- */
 export const getRoomsByHotel = async (hotelId: string): Promise<Room[]> => {
   await simulateNetworkDelay();
 
@@ -335,9 +350,6 @@ export const getRoomsByHotel = async (hotelId: string): Promise<Room[]> => {
   return rooms.filter((room) => room.hotelId === hotelId);
 };
 
-/**
- * GET /api/rooms/:id
- */
 export const getRoomById = async (id: string): Promise<Room> => {
   await simulateNetworkDelay();
 
@@ -355,10 +367,6 @@ export const getRoomById = async (id: string): Promise<Room> => {
   return room;
 };
 
-/**
- * POST /api/hotels/:hotelId/rooms
- * Crear habitación y recalcular score del hotel
- */
 export const createRoom = async (
   hotelId: string,
   roomData: Omit<Room, "id" | "hotelId" | "createdAt" | "updatedAt">
@@ -396,10 +404,6 @@ export const createRoom = async (
   return newRoom;
 };
 
-/**
- * PUT /api/rooms/:id
- * Actualizar habitación y recalcular score del hotel
- */
 export const updateRoom = async (
   id: string,
   roomData: Partial<Omit<Room, "id" | "hotelId" | "createdAt" | "updatedAt">>
@@ -442,10 +446,6 @@ export const updateRoom = async (
   return updatedRoom;
 };
 
-/**
- * DELETE /api/rooms/:id
- * Eliminar habitación y recalcular score del hotel
- */
 export const deleteRoom = async (id: string): Promise<{ message: string }> => {
   await simulateNetworkDelay();
   await getCurrentUser();
@@ -481,10 +481,6 @@ export const deleteRoom = async (id: string): Promise<{ message: string }> => {
 
 // ==================== ADMIN ENDPOINTS ====================
 
-/**
- * GET /api/admin/stats
- * Obtener estadísticas generales
- */
 export const getAdminStats = async (): Promise<AdminStats> => {
   await simulateNetworkDelay();
 
@@ -555,7 +551,7 @@ export const seedDatabase = (): void => {
 export const clearAllData = (): void => {
   localStorage.removeItem(STORAGE_KEYS.USERS);
   localStorage.removeItem(STORAGE_KEYS.HOTELS);
-  localStorage.removeItem(STORAGE_KEYS.ROOMS); // ← AGREGAR
+  localStorage.removeItem(STORAGE_KEYS.ROOMS);
   sessionStorage.removeItem(STORAGE_KEYS.SESSION);
   console.log("🗑️ All data cleared");
 };

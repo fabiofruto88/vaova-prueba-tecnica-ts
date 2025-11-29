@@ -18,8 +18,14 @@ export const ProtectedRoute = ({
   requireAllModules,
   isPublic = false,
 }: ProtectedRouteProps) => {
-  const { isAuthenticated, isLoading, hasModule, hasAnyModule, hasAllModules } =
-    useAuth();
+  const {
+    isAuthenticated,
+    isLoading,
+    user,
+    hasModule,
+    hasAnyModule,
+    hasAllModules,
+  } = useAuth();
   const location = useLocation();
 
   // Mostrar loading mientras verifica autenticación
@@ -40,9 +46,18 @@ export const ProtectedRoute = ({
   // RUTA PÚBLICA (ej: login)
   // ==========================================
   if (isPublic) {
-    // Si ya está autenticado y trata de ir a login, redirigir al dashboard
+    // Si ya está autenticado y trata de ir a una ruta pública (ej: login),
+    // intentar redirigir al origen (`from`) si existe; si no, usar ruta por rol.
     if (isAuthenticated) {
-      return <Navigate to="/dashboard" replace />;
+      console.log(user?.role);
+      const rolePath =
+        user?.role === "hotel"
+          ? "/hotels"
+          : user?.role === "admin"
+          ? "/admin"
+          : "/dashboard";
+      console.log("Role path:", rolePath);
+      return <Navigate to={rolePath} replace />;
     }
     // Si no está autenticado, permitir acceso
     return children;

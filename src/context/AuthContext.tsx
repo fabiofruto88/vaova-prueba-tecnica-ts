@@ -9,6 +9,7 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import { CookieUtils } from "../utils/cookies";
+import { logout as logoutStorage } from "../lib/simulatedEndpoints";
 import type { User, LoginResponse } from "../types/auth.types";
 
 // ============================================
@@ -78,6 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const parsedUser: User = JSON.parse(userData);
       console.log("✅ Sesión activa:", parsedUser.name);
       console.log("📦 Módulos disponibles:", parsedUser.modules);
+      console.log(parsedUser);
       setUser(parsedUser);
     } catch (error) {
       console.error("❌ Error al verificar autenticación:", error);
@@ -127,7 +129,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Guardar en cookies
     CookieUtils.setCookie("accessToken", token, cookieDays);
-    CookieUtils.setCookie("user", JSON.stringify(user), cookieDays);
+    const { avatar, ...userWithoutAvatar } = user;
+    CookieUtils.setCookie(
+      "user",
+      JSON.stringify(userWithoutAvatar),
+      cookieDays
+    );
     CookieUtils.setCookie("tokenExpires", expiresAt.toString(), cookieDays);
 
     if (refreshToken) {
@@ -147,6 +154,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // ============================================
   const logout = useCallback(() => {
     console.log("👋 Cerrando sesión...");
+    logoutStorage();
     clearAuthData();
     setUser(null);
     navigate("/login", { replace: true });
