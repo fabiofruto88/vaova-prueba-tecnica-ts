@@ -23,7 +23,7 @@ export interface NavigationItem {
 export const navigationConfig: NavigationItem[] = [
   {
     title: "Dashboard",
-    path: "/dashboard",
+    path: "/admin/dashboard",
     icon: <DashboardIcon />,
     // Sin requiredModule = todos tienen acceso
   },

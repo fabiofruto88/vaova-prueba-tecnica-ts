@@ -1,15 +1,6 @@
-// src/pages/Dashboard.tsx
-
-import { useNavigate } from "react-router-dom";
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Grid,
-  Chip,
-  Stack,
-} from "@mui/material";
+/* import { useNavigate } from "react-router-dom"; */
+import { Box, Typography, Grid, Container } from "@mui/material";
+/* import { useTheme } from "@mui/material/styles"; */
 import {
   getDashboardData,
   formatRevenue,
@@ -19,6 +10,7 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { useEffect, useState } from "react";
 import StatCard from "../../components/cardStats";
+import Loading from "../../components/loanding";
 import { Hotel } from "@mui/icons-material";
 
 export default function Dashboard() {
@@ -26,6 +18,7 @@ export default function Dashboard() {
 
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  /*   const theme = useTheme(); */
   const loadData = async () => {
     try {
       setLoading(true);
@@ -82,7 +75,7 @@ export default function Dashboard() {
   console.log("🌎 COUNTRIES:", countries);
   console.log("⭐ STARS:", stars);
   return (
-    <Stack sx={{ p: 1 }}>
+    <Container sx={{ p: 1 }} maxWidth="xl">
       <Box
         display="flex"
         justifyContent="space-between"
@@ -108,8 +101,8 @@ export default function Dashboard() {
         </Grid>
         <Grid size={{ xs: 12, md: 4, lg: 2 }}>
           <StatCard
-            title="Total Hoteles"
-            value={156}
+            title="Total Habitaciones"
+            value={stats?.totalRooms || 0}
             icon={Hotel}
             colorIcon="#1976d2"
             widthIcon={40}
@@ -117,14 +110,25 @@ export default function Dashboard() {
         </Grid>
         <Grid size={{ xs: 12, md: 4, lg: 2 }}>
           <StatCard
-            title="Total Hoteles"
-            value={156}
+            title="Ocupación Promedio  (%)"
+            value={stats?.occupancy || 0}
+            icon={Hotel}
+            colorIcon="#1976d2"
+            widthIcon={40}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4, lg: 2 }}>
+          <StatCard
+            title="Ingreso promedio"
+            value={stats?.revenue || 0}
             icon={Hotel}
             colorIcon="#1976d2"
             widthIcon={40}
           />
         </Grid>
       </Grid>
-    </Stack>
+
+      <Loading open={loading} />
+    </Container>
   );
 }

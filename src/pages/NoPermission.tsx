@@ -1,10 +1,8 @@
 // src/pages/NoPermission.tsx
-import { Box, Typography, Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Box, Typography } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
 
 export default function NoPermission() {
-  const navigate = useNavigate();
   const { user } = useAuth();
 
   return (

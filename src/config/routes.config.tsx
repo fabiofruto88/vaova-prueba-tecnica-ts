@@ -32,7 +32,7 @@ export const routes: RouteConfig[] = [
   // RUTAS AUTENTICADAS (con AuthenticatedLayout)
   // ==========================================
   {
-    path: "/dashboard",
+    path: "/admin/dashboard",
     component: <Dashboard />,
     layout: "authenticated",
     name: "Dashboard",

@@ -54,8 +54,8 @@ export const ProtectedRoute = ({
         user?.role === "hotel"
           ? "/hotels"
           : user?.role === "admin"
-          ? "/admin"
-          : "/dashboard";
+          ? "/admin/dashboard"
+          : "/";
       console.log("Role path:", rolePath);
       return <Navigate to={rolePath} replace />;
     }
