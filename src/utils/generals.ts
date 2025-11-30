@@ -182,3 +182,46 @@ export const capitalizeName = (name: string): string => {
   };
   return words.map(capitalizeToken).join(" ");
 };
+
+// Navigation filter util
+import { type NavigationItem } from "../config/navigation.config";
+
+export const filterNavItems = (
+  items: NavigationItem[],
+  params?: {
+    hasModule?: (moduleName: string) => boolean;
+    userRole?: string | null | undefined;
+  }
+): NavigationItem[] => {
+  const { hasModule, userRole } = params || {};
+
+  return items
+    .filter((item) => {
+      // Support new `role` (string) or `roles` (string[]) fields in NavigationItem
+      const itemRoles: string | string[] | undefined =
+        (item as any).role ?? (item as any).roles;
+      if (itemRoles) {
+        if (!userRole) return false;
+        if (typeof itemRoles === "string") {
+          if (itemRoles !== userRole) return false;
+        } else if (Array.isArray(itemRoles)) {
+          if (!itemRoles.includes(userRole)) return false;
+        }
+      }
+
+      // If no module required, keep
+      if (!item.requiredModule) return true;
+
+      // If module is required, use the provided hasModule checker if available
+      if (hasModule) return hasModule(item.requiredModule);
+
+      // If we can't check modules, be conservative and hide
+      return false;
+    })
+    .map((item) => ({
+      ...item,
+      children: item.children
+        ? filterNavItems(item.children, params)
+        : undefined,
+    }));
+};

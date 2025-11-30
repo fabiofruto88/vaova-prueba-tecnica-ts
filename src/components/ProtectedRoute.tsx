@@ -1,4 +1,3 @@
-// src/components/ProtectedRoute.tsx
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Box, CircularProgress } from "@mui/material";
@@ -28,7 +27,6 @@ export const ProtectedRoute = ({
   } = useAuth();
   const location = useLocation();
 
-  // Mostrar loading mientras verifica autenticación
   if (isLoading) {
     return (
       <Box
@@ -42,38 +40,24 @@ export const ProtectedRoute = ({
     );
   }
 
-  // ==========================================
-  // RUTA PÚBLICA (ej: login)
-  // ==========================================
   if (isPublic) {
-    // Si ya está autenticado y trata de ir a una ruta pública (ej: login),
-    // intentar redirigir al origen (`from`) si existe; si no, usar ruta por rol.
     if (isAuthenticated) {
       console.log(user?.role);
       const rolePath =
         user?.role === "hotel"
-          ? "/hotels"
+          ? "/hotel/my-hotel"
           : user?.role === "admin"
           ? "/admin/dashboard"
           : "/";
-      console.log("Role path:", rolePath);
+      /*    console.log("Role path:", rolePath); */
       return <Navigate to={rolePath} replace />;
     }
-    // Si no está autenticado, permitir acceso
     return children;
   }
 
-  // ==========================================
-  // RUTA PROTEGIDA
-  // ==========================================
-  // Si no está autenticado, redirigir a login
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
-
-  // ==========================================
-  // VERIFICAR PERMISOS ESPECÍFICOS
-  // ==========================================
 
   // Requiere un módulo específico
   if (requiredModule && !hasModule(requiredModule)) {
@@ -81,7 +65,6 @@ export const ProtectedRoute = ({
     return <Navigate to="/sin-permiso" replace />;
   }
 
-  // Requiere AL MENOS UNO de los módulos
   if (requiredModules && !hasAnyModule(requiredModules)) {
     console.warn(
       `🚫 Sin acceso. Necesita uno de: ${requiredModules.join(", ")}`
@@ -89,7 +72,6 @@ export const ProtectedRoute = ({
     return <Navigate to="/sin-permiso" replace />;
   }
 
-  // Requiere TODOS los módulos
   if (requireAllModules && !hasAllModules(requireAllModules)) {
     console.warn(
       `🚫 Sin acceso. Necesita todos: ${requireAllModules.join(", ")}`
@@ -97,8 +79,5 @@ export const ProtectedRoute = ({
     return <Navigate to="/sin-permiso" replace />;
   }
 
-  // ==========================================
-  // TODO OK - RENDERIZAR
-  // ==========================================
   return children;
 };

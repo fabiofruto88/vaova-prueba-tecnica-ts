@@ -3,7 +3,10 @@ import type { RouteConfig } from "../types/auth.types";
 import Home from "../pages/public/Home";
 import Login from "../pages/public/Login";
 import Dashboard from "../pages/admin/Dashboard";
+import Hotels from "../pages/admin/hotels";
+
 import Register from "../pages/public/register";
+import MyHotel from "../pages/hotel/myHotel";
 
 export const routes: RouteConfig[] = [
   {
@@ -37,6 +40,19 @@ export const routes: RouteConfig[] = [
     layout: "authenticated",
     name: "Dashboard",
   },
+  {
+    path: "/admin/hotels",
+    component: <Hotels />,
+    layout: "authenticated",
+    name: "Hoteles",
+  },
+  {
+    path: "/hotel/my-hotel",
+    component: <MyHotel />,
+    name: "Mi Hotel",
+    layout: "authenticated",
+  },
+
   /*  {
     path: "/perfil",
     component: <Profile />,

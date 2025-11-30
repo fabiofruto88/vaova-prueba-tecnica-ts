@@ -1,44 +1,52 @@
-// src/config/navigation.config.tsx
 import {
   HomeIcon as DashboardIcon,
-  UsersIcon as PeopleIcon,
-  ArchiveBoxIcon as InventoryIcon,
-  ChartBarIcon as AssessmentIcon,
-  Cog6ToothIcon as SettingsIcon,
-  UserIcon as PersonIcon,
+  KeyIcon,
+  HomeModernIcon,
+  PhotoIcon,
 } from "@heroicons/react/24/outline";
 
 export interface NavigationItem {
   title: string;
   path: string;
   icon: React.ReactElement;
-  requiredModule?: string; // Módulo del backend
+  requiredModule?: string; // Módulo del backend en este caso no lo puse debido a que no hay back
   children?: NavigationItem[];
+  roles: "admin" | "hotel";
 }
 
-/**
- * Configuración del menú de navegación
- * Los items se muestran solo si el usuario tiene el módulo requerido
- */
 export const navigationConfig: NavigationItem[] = [
   {
     title: "Dashboard",
     path: "/admin/dashboard",
     icon: <DashboardIcon />,
-    // Sin requiredModule = todos tienen acceso
+    roles: "admin",
   },
   {
-    title: "Mi Perfil",
-    path: "/perfil",
-    icon: <PersonIcon />,
+    title: "Hoteles",
+    path: "/admin/hotels",
+    icon: <HomeModernIcon />,
+    roles: "admin",
   },
   {
-    title: "Usuarios",
-    path: "/usuarios",
-    icon: <PeopleIcon />,
-    requiredModule: "usuarios", // ← Del backend
+    title: "Mi Hotel",
+    path: "/hotel/my-hotel",
+    icon: <HomeModernIcon />,
+    roles: "hotel",
   },
   {
+    title: "Habitaciones",
+    path: "/hotel/rooms",
+    icon: <KeyIcon />,
+    roles: "hotel",
+  },
+  {
+    title: "Galería",
+    path: "/hotel/gallery",
+    icon: <PhotoIcon />,
+    roles: "hotel",
+  },
+
+  /*   {
     title: "Productos",
     path: "/productos",
     icon: <InventoryIcon />,
@@ -69,5 +77,5 @@ export const navigationConfig: NavigationItem[] = [
     path: "/configuracion",
     icon: <SettingsIcon />,
     requiredModule: "configuracion",
-  },
+  }, */
 ];

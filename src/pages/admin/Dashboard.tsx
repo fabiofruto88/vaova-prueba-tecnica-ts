@@ -12,6 +12,7 @@ import Loading from "../../components/loanding";
 import { Hotel } from "@mui/icons-material";
 
 import CardTopHotel from "../../components/cardTopHotel";
+import ProgressBarItem from "../../components/ProgressBarItem";
 
 interface Thotels {
   rank: number;
@@ -104,7 +105,7 @@ export default function Dashboard() {
         mb={4}
       >
         <div>
-          <Typography variant="h4">Panel administrativo</Typography>
+          <Typography variant="h4">Panel de Administración</Typography>
           <Typography variant="body1" color="text.secondary">
             Bienvenido, {user?.name}
           </Typography>
@@ -148,33 +149,74 @@ export default function Dashboard() {
           />
         </Grid>
       </Grid>
-      <Stack spacing={2} my={3}>
-        <Typography variant="h6">Hoteles con Mejor Desempeño</Typography>
-        {topHotels && topHotels.length > 0 ? (
-          topHotels.map((hotel, index) => (
-            <CardTopHotel
-              key={index}
-              rank={hotel.rank}
-              logo={hotel.logo}
-              name={hotel.name}
-              location={hotel.location}
-              rating={hotel.rating}
-              score={hotel.score}
-              scoreColor={hotel.scoreColor}
-            />
-          ))
-        ) : (
-          <Card sx={{ p: 2, textAlign: "center" }} elevation={1}>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              textAlign="center"
+      <Grid container spacing={2} mt={1}>
+        <Grid size={{ xs: 12, md: 8 }}>
+          <Stack spacing={2} my={3}>
+            <Typography variant="h6">Hoteles con Mejor Desempeño</Typography>
+            {topHotels && topHotels.length > 0 ? (
+              topHotels.map((hotel, index) => (
+                <CardTopHotel
+                  key={index}
+                  rank={hotel.rank}
+                  logo={hotel.logo}
+                  name={hotel.name}
+                  location={hotel.location}
+                  rating={hotel.rating}
+                  score={hotel.score}
+                  scoreColor={hotel.scoreColor}
+                />
+              ))
+            ) : (
+              <Card sx={{ p: 2, textAlign: "center" }} elevation={1}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  textAlign="center"
+                >
+                  No hay hoteles para mostrar.
+                </Typography>
+              </Card>
+            )}
+          </Stack>
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Stack spacing={2} my={3}>
+            <Typography variant="h6">Distribución por País</Typography>
+            <Card
+              sx={{
+                display: "flex",
+                flex: 1,
+                minWidth: "100%",
+                px: 2,
+                py: 1.5,
+              }}
+              elevation={1}
             >
-              No hay hoteles para mostrar.
-            </Typography>
-          </Card>
-        )}
-      </Stack>
+              {countries && countries.length > 0 ? (
+                countries.map((country, index) => (
+                  <ProgressBarItem
+                    key={index}
+                    title={country.name}
+                    percentage={country.percentage}
+                    category={`${country.count} hoteles`}
+                    color="#1976d2"
+                  />
+                ))
+              ) : (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  textAlign="center"
+                  sx={{ p: 2 }}
+                >
+                  No hay países para mostrar.
+                </Typography>
+              )}
+            </Card>
+          </Stack>
+        </Grid>
+      </Grid>
+
       <Loading open={loading} />
     </Container>
   );

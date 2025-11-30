@@ -9,6 +9,7 @@ import {
   MenuItem,
   Box,
   Divider,
+  List,
 } from "@mui/material";
 import { Bars3Icon } from "@heroicons/react/24/outline";
 import { Hotel as HotelIcon } from "@mui/icons-material";
@@ -18,18 +19,25 @@ import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import { useThemeContext } from "../../context/theme-context";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
+import { filterNavItems } from "../../utils/generals";
+import {
+  navigationConfig,
+  type NavigationItem,
+} from "../../config/navigation.config";
+import NavItem from "../../components/navItem";
 
 interface AuthHeaderProps {
   onMenuClick: () => void;
 }
 
 export default function AuthHeader({ onMenuClick }: AuthHeaderProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, hasModule } = useAuth();
   const theme = useTheme();
   const navigate = useNavigate();
+  const [openItems, setOpenItems] = useState<{ [key: string]: boolean }>({});
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { isDarkMode, toggleTheme } = useThemeContext();
-
+  const isActive = (path: string) => location.pathname === path;
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -42,11 +50,26 @@ export default function AuthHeader({ onMenuClick }: AuthHeaderProps) {
     handleClose();
     logout();
   };
+  const handleItemClick = (item: NavigationItem) => {
+    if (item.children && item.children.length > 0) {
+      setOpenItems((prev) => ({
+        ...prev,
+        [item.path]: !prev[item.path],
+      }));
+    } else {
+      navigate(item.path);
+      handleClose();
+    }
+  };
+
+  const availableItems = filterNavItems(navigationConfig, {
+    hasModule,
+    userRole: user?.role,
+  });
 
   return (
     <AppBar position="sticky" color="inherit" elevation={0}>
       <Toolbar>
-        {/* Botón menú (sidebar) */}
         <IconButton
           edge="start"
           color="inherit"
@@ -57,9 +80,7 @@ export default function AuthHeader({ onMenuClick }: AuthHeaderProps) {
           <Bars3Icon style={{ width: 24, height: 24 }} />
         </IconButton>
 
-        {/* Logo */}
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          {/* <img src={logo} alt="Logo" style={{ height: 40, marginRight: 8 }} /> */}
           <HotelIcon sx={{ color: "primary.main", fontSize: 28, mr: 1 }} />
           <Typography variant="h6" component="div" fontWeight={800}>
             VAOVA
@@ -81,13 +102,6 @@ export default function AuthHeader({ onMenuClick }: AuthHeaderProps) {
           )}
         </IconButton>
 
-        {/* Notificaciones */}
-
-        {/*  <IconButton color="inherit">
-          <BellIcon style={{ width: 24, height: 24 }} />
-        </IconButton> */}
-
-        {/* Usuario */}
         <IconButton onClick={handleMenu} color="inherit">
           <Avatar
             sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.dark }}
@@ -115,15 +129,17 @@ export default function AuthHeader({ onMenuClick }: AuthHeaderProps) {
             </Typography>
           </Box>
           <Divider />
-          <MenuItem
-            sx={{ my: 1, mx: 1, borderRadius: 2 }}
-            onClick={() => {
-              handleClose();
-              navigate("/perfil");
-            }}
-          >
-            Mi perfil
-          </MenuItem>
+          <List sx={{ flex: 1 }}>
+            {availableItems.map((item) => (
+              <NavItem
+                key={item.path}
+                item={item}
+                openItems={openItems}
+                handleItemClick={handleItemClick}
+                isActive={isActive}
+              />
+            ))}
+          </List>
 
           <Divider />
           <MenuItem
