@@ -198,7 +198,83 @@ export const getCurrentUser = async (): Promise<Omit<User, "password">> => {
   return userWithoutPassword;
 };
 
-// ==================== HOTEL ENDPOINTS ====================
+// Crear hotel con su cuenta de usuario asociada (Solo Admin)
+
+export const createHotelWithAccount = async (data: {
+  email: string;
+  password: string;
+  name: string;
+  avatar?: string;
+
+  description: string;
+  country: string;
+  state: string;
+  city: string;
+  stars: 3 | 4 | 5;
+}): Promise<{ user: Omit<User, "password">; hotel: Hotel }> => {
+  await simulateNetworkDelay();
+
+  const currentUser = await getCurrentUser();
+  if (currentUser.role !== "admin") {
+    throw {
+      error: true,
+      message: "Unauthorized - Admin only",
+      statusCode: 403,
+    } as ApiError;
+  }
+
+  const users = getFromStorage<User>(STORAGE_KEYS.USERS);
+
+  if (users.find((u) => u.email === data.email)) {
+    throw {
+      error: true,
+      message: "Email already registered",
+      statusCode: 400,
+    } as ApiError;
+  }
+
+  const userId = `user-${Date.now()}`;
+  const newUser: User = {
+    id: userId,
+    name: data.name,
+    email: data.email,
+    password: data.password,
+    role: "hotel",
+    modules: [],
+    avatar: data.avatar || "",
+    createdAt: new Date().toISOString(),
+  };
+
+  users.push(newUser);
+  saveToStorage(STORAGE_KEYS.USERS, users);
+
+  const hotels = getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
+
+  const newHotel: Hotel = {
+    id: `hotel-${Date.now()}`,
+    name: data.name,
+    description: data.description,
+    country: data.country,
+    state: data.state,
+    city: data.city,
+    logo: data.avatar || "",
+    stars: data.stars,
+    score: 0,
+    gallery: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  hotels.push(newHotel);
+  saveToStorage(STORAGE_KEYS.HOTELS, hotels);
+
+  const { password, ...userWithoutPassword } = newUser;
+
+  return {
+    user: userWithoutPassword,
+    hotel: newHotel,
+  };
+};
 
 /**
  * GET /api/hotels

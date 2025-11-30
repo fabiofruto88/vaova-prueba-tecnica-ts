@@ -82,7 +82,7 @@ export interface Hotel {
   state: string;
   city: string;
   logo?: string;
-  stars: 3 | 4 | 5;
+  stars: 1 | 2 | 3 | 4 | 5;
   score: number; // Score calculado automáticamente (0-100)
   gallery: string[];
   createdAt: string;

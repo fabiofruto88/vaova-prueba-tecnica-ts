@@ -29,7 +29,7 @@ const Loading: React.FC<LoadingProps> = ({
       open={!!open}
       sx={{
         color: primaryColor,
-        zIndex: (t) => t.zIndex.drawer + 1,
+        zIndex: (t) => t.zIndex.modal + 1,
       }}
     >
       <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
