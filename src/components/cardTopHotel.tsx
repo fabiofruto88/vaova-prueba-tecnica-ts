@@ -48,11 +48,12 @@ const CardTopHotel: React.FC<Props> = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            maxWidth: { xs: "60%", md: "10%" },
+            maxWidth: { xs: "30%", md: "10%" },
             minHeight: 0,
             my: { xs: 0, md: 2 },
             borderRadius: 1,
             overflow: "hidden",
+            aspectRatio: { xs: "1 / 1", md: "4 / 3" },
           }}
         >
           <img
@@ -61,7 +62,6 @@ const CardTopHotel: React.FC<Props> = ({
             width="100%"
             height="100%"
             style={{
-              aspectRatio: "1 / 1",
               objectFit: "cover",
               background: "transparent",
             }}
