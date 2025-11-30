@@ -9,7 +9,14 @@ import type {
   User,
 } from "../types/auth.types";
 import type { CreateHotelFormData } from "../types/common";
-import { STORAGE_KEYS, TOKEN_EXPIRATION } from "../utils/constants";
+import {
+  CAPACITY_BY_TYPE,
+  ROOM_AMENITIES_SET,
+  ROOM_TYPES,
+  STORAGE_KEYS,
+  TOKEN_EXPIRATION,
+  type RoomType,
+} from "../utils/constants";
 import { generateRefreshToken, generateToken } from "../utils/jwt";
 import {
   getFromStorage,
@@ -381,10 +388,8 @@ export const updateHotelByAdmin = async (
   };
 };
 
-/**
- * DELETE /api/admin/hotels/:id
- * Elimina hotel y usuario asociado (Admin only)
- */
+//Elimina hotel y usuario asociado (Admin only)
+
 export const deleteHotelByAdmin = async (
   id: string
 ): Promise<{ message: string }> => {
@@ -467,40 +472,6 @@ export const getHotelById = async (id: string): Promise<Hotel> => {
   return hotel;
 };
 
-/**
- * POST /api/hotels
- */
-
-/**
- * POST /api/hotels
- * Crear hotel con score calculado automáticamente
- */
-export const createHotel = async (
-  hotelData: Omit<Hotel, "id" | "createdAt" | "updatedAt" | "score">
-): Promise<Hotel> => {
-  await simulateNetworkDelay();
-  await getCurrentUser();
-
-  const hotels = getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
-
-  const newHotel: Hotel = {
-    ...hotelData,
-    id: `hotel-${Date.now()}`,
-    score: 0, // Se calculará cuando agreguen habitaciones
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  hotels.push(newHotel);
-  saveToStorage(STORAGE_KEYS.HOTELS, hotels);
-
-  return newHotel;
-};
-
-/**
- * PUT /api/hotels/:id
- * Actualizar hotel y recalcular score
- */
 export const updateHotel = async (
   id: string,
   hotelData: Partial<Omit<Hotel, "id" | "createdAt" | "updatedAt" | "score">>
@@ -535,7 +506,27 @@ export const updateHotel = async (
 
   return updatedHotel;
 };
+export const createHotel = async (
+  hotelData: Omit<Hotel, "id" | "createdAt" | "updatedAt" | "score">
+): Promise<Hotel> => {
+  await simulateNetworkDelay();
+  await getCurrentUser();
 
+  const hotels = getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
+
+  const newHotel: Hotel = {
+    ...hotelData,
+    id: `hotel-${Date.now()}`,
+    score: 0, // Se calculará cuando agreguen habitaciones
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  hotels.push(newHotel);
+  saveToStorage(STORAGE_KEYS.HOTELS, hotels);
+
+  return newHotel;
+};
 /**
  * GET /api/hotels/:id/full
  * Obtener hotel con sus habitaciones
@@ -582,10 +573,87 @@ export const deleteHotel = async (id: string): Promise<{ message: string }> => {
 };
 
 // ==================== ROOM ENDPOINTS ====================
+const sanitizeAmenities = (amenities: string[] | undefined): string[] => {
+  if (!amenities || amenities.length === 0) return [];
+  return amenities
+    .map((a) => a.trim())
+    .filter((a) => ROOM_AMENITIES_SET.has(a));
+};
+const deriveCapacityFromType = (type: RoomType): number => {
+  const capacity = CAPACITY_BY_TYPE[type];
+  if (!capacity) {
+    throw {
+      error: true,
+      message: `Invalid room type '${type}'. Allowed: ${ROOM_TYPES.join(", ")}`,
+      statusCode: 400,
+    } as ApiError;
+  }
+  return capacity;
+};
+const validateRoomCore = (
+  partial: Partial<Room>,
+  mode: "create" | "update"
+) => {
+  if (mode === "create") {
+    if (!partial.name || partial.name.trim().length === 0) {
+      throw {
+        error: true,
+        message: "Room name is required",
+        statusCode: 400,
+      } as ApiError;
+    }
+    if (!partial.type) {
+      throw {
+        error: true,
+        message: "Room type is required",
+        statusCode: 400,
+      } as ApiError;
+    }
+    if (partial.available === undefined) {
+      throw {
+        error: true,
+        message: "Available quantity is required",
+        statusCode: 400,
+      } as ApiError;
+    }
+    if (partial.price === undefined) {
+      throw {
+        error: true,
+        message: "Room price is required",
+        statusCode: 400,
+      } as ApiError;
+    }
+  }
+
+  if (partial.type && !ROOM_TYPES.includes(partial.type)) {
+    throw {
+      error: true,
+      message: `Invalid room type '${partial.type}'. Allowed: ${ROOM_TYPES.join(
+        ", "
+      )}`,
+      statusCode: 400,
+    } as ApiError;
+  }
+
+  if (partial.available !== undefined && partial.available < 1) {
+    throw {
+      error: true,
+      message: "Available must be at least 1",
+      statusCode: 400,
+    } as ApiError;
+  }
+
+  if (partial.price !== undefined && partial.price <= 0) {
+    throw {
+      error: true,
+      message: "Price must be greater than 0",
+      statusCode: 400,
+    } as ApiError;
+  }
+};
 
 export const getRoomsByHotel = async (hotelId: string): Promise<Room[]> => {
   await simulateNetworkDelay();
-
   const rooms = getFromStorage<Room>(STORAGE_KEYS.ROOMS);
   return rooms.filter((room) => room.hotelId === hotelId);
 };
@@ -609,13 +677,22 @@ export const getRoomById = async (id: string): Promise<Room> => {
 
 export const createRoom = async (
   hotelId: string,
-  roomData: Omit<Room, "id" | "hotelId" | "createdAt" | "updatedAt">
+  roomData: Omit<
+    Room,
+    "id" | "hotelId" | "createdAt" | "updatedAt" | "capacity"
+  >
 ): Promise<Room> => {
   await simulateNetworkDelay();
   await getCurrentUser();
 
-  // Verificar que el hotel existe
+  // Verificar hotel existe
   await getHotelById(hotelId);
+
+  validateRoomCore(roomData as Partial<Room>, "create");
+
+  const capacity = deriveCapacityFromType(roomData.type);
+
+  const sanitizedAmenities = sanitizeAmenities(roomData.amenities);
 
   const rooms = getFromStorage<Room>(STORAGE_KEYS.ROOMS);
 
@@ -623,6 +700,10 @@ export const createRoom = async (
     ...roomData,
     id: `room-${Date.now()}`,
     hotelId,
+    capacity,
+    amenities: sanitizedAmenities,
+    images: roomData.images || [],
+    description: roomData.description || "",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -630,7 +711,7 @@ export const createRoom = async (
   rooms.push(newRoom);
   saveToStorage(STORAGE_KEYS.ROOMS, rooms);
 
-  // Recalcular score del hotel
+  // Recalcular score del hotel (usa amenities y available en cálculo)
   const hotels = getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
   const hotelIndex = hotels.findIndex((h) => h.id === hotelId);
   if (hotelIndex !== -1) {
@@ -643,10 +724,14 @@ export const createRoom = async (
 
   return newRoom;
 };
-
 export const updateRoom = async (
   id: string,
-  roomData: Partial<Omit<Room, "id" | "hotelId" | "createdAt" | "updatedAt">>
+  roomData: Partial<
+    Omit<
+      Room,
+      "id" | "hotelId" | "createdAt" | "updatedAt" | "capacity" // capacity se recalcula, no se recibe
+    >
+  >
 ): Promise<Room> => {
   await simulateNetworkDelay();
   await getCurrentUser();
@@ -662,9 +747,29 @@ export const updateRoom = async (
     } as ApiError;
   }
 
+  validateRoomCore(roomData as Partial<Room>, "update");
+
+  const existing = rooms[index];
+
+  // Derivar capacity si cambia type, de lo contrario mantener el actual
+  const nextType: RoomType = roomData.type ?? existing.type;
+  const nextCapacity =
+    nextType !== existing.type
+      ? deriveCapacityFromType(nextType)
+      : existing.capacity;
+
+  const nextAmenities = roomData.amenities
+    ? sanitizeAmenities(roomData.amenities)
+    : existing.amenities;
+
   const updatedRoom: Room = {
-    ...rooms[index],
+    ...existing,
     ...roomData,
+    type: nextType,
+    capacity: nextCapacity,
+    amenities: nextAmenities,
+    images: roomData.images ?? existing.images,
+    description: roomData.description ?? existing.description,
     updatedAt: new Date().toISOString(),
   };
 
@@ -800,7 +905,6 @@ export const seedDatabase = (): void => {
     console.log("Hotel user created: hotel@vaova.com / hotel123");
   }
 
-  // Guardar usuarios actualizados
   saveToStorage(STORAGE_KEYS.USERS, users);
 
   let targetHotel: Hotel | undefined =
@@ -813,9 +917,9 @@ export const seedDatabase = (): void => {
       country: "Colombia",
       state: "Atlántico",
       city: "Barranquilla",
-      logo: logohoteldefect, // vacío según lo pedido
+      logo: logohoteldefect,
       stars: 4,
-      score: 0, // se actualiza más abajo tras crear rooms
+      score: 0,
       gallery: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -827,25 +931,28 @@ export const seedDatabase = (): void => {
     );
   }
 
-  // 4) Asegurar existencia de al menos una room asociada al targetHotel
   const existingRoomsForHotel = rooms.filter(
     (r) => r.hotelId === targetHotel!.id
   );
   if (existingRoomsForHotel.length === 0) {
-    // Crear una habitación mínima coherente con las estructuras usadas en el repo.
-    // Ajusta los campos si tu tipo Room tiene otros obligatorios.
+    // Nueva estructura de room con type y capacity derivada
+    const demoType: RoomType = "twin";
     const newRoom: Room = {
       id: `room-${Date.now()}`,
       hotelId: targetHotel!.id,
       name: "Habitación Estándar",
-      description: "Habitación de ejemplo creada por seedDatabase",
-      price: 100,
+      type: demoType,
+      capacity: deriveCapacityFromType(demoType),
+      price: 120,
       available: 5,
+      description: "Habitación de ejemplo creada por seedDatabase",
       images: [],
-      amenities: [],
+      amenities: ["Wifi", "Aire Acondicionado"].filter((a) =>
+        ROOM_AMENITIES_SET.has(a)
+      ),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-    } as unknown as Room; // casteo seguro por compatibilidad con definiciones estrictas
+    };
     rooms.push(newRoom);
     saveToStorage(STORAGE_KEYS.ROOMS, rooms);
     console.log(
@@ -853,7 +960,6 @@ export const seedDatabase = (): void => {
     );
   }
 
-  // 5) Recalcular score del hotel usando la función existente (mantener coherencia)
   const hotelsAfter = getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
   const hotelIndex = hotelsAfter.findIndex((h) => h.id === targetHotel!.id);
   if (hotelIndex !== -1) {
@@ -876,9 +982,7 @@ export const seedDatabase = (): void => {
     "seedDatabase: datos iniciales garantizados (admin, hotel user, hotel y room)."
   );
 };
-/**
- * Limpia toda la data (útil para testing)
- */
+
 export const clearAllData = (): void => {
   localStorage.removeItem(STORAGE_KEYS.USERS);
   localStorage.removeItem(STORAGE_KEYS.HOTELS);

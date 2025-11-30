@@ -34,6 +34,7 @@ const CardTopHotel: React.FC<Props> = ({
           flexDirection: { xs: "column", md: "row" },
           justifyContent: "flex-start",
           alignItems: "center",
+          gap: { xs: 1, md: 0 },
         }}
       >
         <Typography

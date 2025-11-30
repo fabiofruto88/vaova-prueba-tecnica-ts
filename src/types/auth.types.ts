@@ -1,3 +1,5 @@
+import type { RoomType } from "../utils/constants";
+
 export interface User {
   id: string;
   name: string;
@@ -30,21 +32,21 @@ export interface RegisterRequest {
   password: string;
   avatar?: string; // en base 64
 }
-
 export interface Room {
   id: string;
   hotelId: string;
-  name: string; // "Suite Presidencial"
-  description: string;
-  capacity: 1 | 2 | 3 | 4 | 6 | 8;
-  pricePerNight: number;
-  available: number; // Cantidad de habitaciones de este tipo
-  image?: string; // Base64
-  amenities: Amenity[]; // Array de amenidades
+  name: string;
+  type: RoomType;
+  capacity: number;
+  price: number;
+  available: number;
+  description?: string;
+  images: string[];
+  amenities: string[];
   createdAt: string;
   updatedAt: string;
 }
-
+/* 
 export type Amenity =
   | "WiFi"
   | "Minibar"
@@ -73,7 +75,7 @@ export const AVAILABLE_AMENITIES: Amenity[] = [
   "Secador de pelo",
   "Cafetera",
 ];
-
+ */
 export interface Hotel {
   id: string;
   name: string;
