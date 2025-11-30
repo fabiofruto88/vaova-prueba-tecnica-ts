@@ -11,15 +11,29 @@ import {
   Typography,
   Rating,
   IconButton,
+  Checkbox,
+  FormControlLabel,
+  InputAdornment,
+  useTheme,
 } from "@mui/material";
-import { XMarkIcon, CameraIcon } from "@heroicons/react/24/outline";
+import {
+  XMarkIcon,
+  CameraIcon,
+  EyeIcon,
+  EyeSlashIcon,
+} from "@heroicons/react/24/outline";
 import { useForm, Controller } from "react-hook-form";
 import type { Hotel } from "../types/auth.types";
 
 interface EditHotelModalProps {
   open: Hotel | null;
   onClose: () => void;
-  onEdit: (id: string, data: Partial<Hotel>) => Promise<void>;
+  onEdit: (
+    id: string,
+    data: Partial<Omit<Hotel, "id" | "createdAt" | "updatedAt" | "score">>,
+    credentials?: { email?: string; password?: string }
+  ) => Promise<void>;
+  role: "admin" | "hotel";
 }
 
 interface HotelFormData {
@@ -30,21 +44,28 @@ interface HotelFormData {
   description: string;
   logo: string;
   stars: 1 | 2 | 3 | 4 | 5;
+  updateCredentials?: boolean;
+  credentialsEmail?: string;
+  credentialsPassword?: string;
 }
 
 export default function EditHotelModal({
   open,
   onClose,
   onEdit,
+  role,
 }: EditHotelModalProps) {
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const theme = useTheme();
 
   const {
     control,
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<HotelFormData>({
     defaultValues: {
@@ -55,8 +76,13 @@ export default function EditHotelModal({
       description: "",
       logo: "",
       stars: 5,
+      updateCredentials: false,
+      credentialsEmail: "",
+      credentialsPassword: "",
     },
   });
+
+  const showCreds = watch("updateCredentials");
 
   useEffect(() => {
     if (open) {
@@ -68,6 +94,9 @@ export default function EditHotelModal({
         description: open.description || "",
         logo: open.logo || "",
         stars: open.stars || 5,
+        updateCredentials: false,
+        credentialsEmail: open?.email || "",
+        credentialsPassword: open?.password || "",
       });
       setLogoPreview(open.logo || "");
     }
@@ -92,7 +121,27 @@ export default function EditHotelModal({
     if (open) {
       setIsSubmitting(true);
       try {
-        await onEdit(open.id, data);
+        const {
+          updateCredentials,
+          credentialsEmail,
+          credentialsPassword,
+          ...hotelData
+        } = data as unknown as {
+          updateCredentials?: boolean;
+          credentialsEmail?: string;
+          credentialsPassword?: string;
+        } & Partial<Hotel>;
+
+        const credentials = updateCredentials
+          ? { email: credentialsEmail, password: credentialsPassword }
+          : undefined;
+
+        if (role === "admin") {
+          await onEdit(open.id, hotelData, credentials);
+        } else {
+          await onEdit(open.id, hotelData);
+        }
+
         onClose();
       } catch (error) {
         console.error("Error al actualizar hotel:", error);
@@ -398,6 +447,107 @@ export default function EditHotelModal({
                 </Box>
               )}
             />
+            {/* Credentials toggle and fields */}
+            {role === "admin" && (
+              <Box>
+                <Controller
+                  name="updateCredentials"
+                  control={control}
+                  render={({ field }) => (
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          {...field}
+                          checked={!!field.value}
+                          onChange={(e) => field.onChange(e.target.checked)}
+                        />
+                      }
+                      label="Actualizar credenciales (email/password)"
+                    />
+                  )}
+                />
+
+                {showCreds && (
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                      gap: 2,
+                    }}
+                  >
+                    <Controller
+                      name="credentialsEmail"
+                      control={control}
+                      rules={{
+                        required: "El email es requerido",
+                        pattern: {
+                          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                          message: "Email inválido",
+                        },
+                      }}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Email"
+                          fullWidth
+                          error={!!errors.credentialsEmail}
+                          helperText={errors.credentialsEmail?.message}
+                        />
+                      )}
+                    />
+
+                    <Controller
+                      name="credentialsPassword"
+                      control={control}
+                      rules={{
+                        required: "La contraseña es obligatoria",
+                        minLength: { value: 6, message: "Mínimo 6 caracteres" },
+                      }}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Contraseña"
+                          fullWidth
+                          type={showPassword ? "text" : "password"}
+                          error={!!errors.credentialsPassword}
+                          helperText={errors.credentialsPassword?.message}
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  onClick={() => setShowPassword((s) => !s)}
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  edge="end"
+                                  size="small"
+                                >
+                                  {showPassword ? (
+                                    <EyeSlashIcon
+                                      style={{
+                                        width: 20,
+                                        height: 20,
+                                        color: theme.palette.primary.main,
+                                      }}
+                                    />
+                                  ) : (
+                                    <EyeIcon
+                                      style={{
+                                        width: 20,
+                                        height: 20,
+                                        color: theme.palette.primary.main,
+                                      }}
+                                    />
+                                  )}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
+                        />
+                      )}
+                    />
+                  </Box>
+                )}
+              </Box>
+            )}
           </Box>
         </Box>
       </DialogContent>

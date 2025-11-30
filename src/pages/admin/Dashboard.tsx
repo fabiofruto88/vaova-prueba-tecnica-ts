@@ -189,6 +189,7 @@ export default function Dashboard() {
                 minWidth: "100%",
                 px: 2,
                 py: 1.5,
+                flexDirection: "column",
               }}
               elevation={1}
             >

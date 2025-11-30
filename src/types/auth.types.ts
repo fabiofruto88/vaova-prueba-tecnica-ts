@@ -81,6 +81,8 @@ export interface Hotel {
   country: string;
   state: string;
   city: string;
+  email?: string;
+  password?: string;
   logo?: string;
   stars: 1 | 2 | 3 | 4 | 5;
   score: number; // Score calculado automáticamente (0-100)

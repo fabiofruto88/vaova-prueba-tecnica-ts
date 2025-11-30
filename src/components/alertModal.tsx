@@ -18,14 +18,7 @@ import {
   ExclamationTriangleIcon,
   QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
-
-type AlertType =
-  | "info"
-  | "error"
-  | "success"
-  | "danger"
-  | "warning"
-  | "question";
+import type { AlertType } from "../types/common";
 
 interface AlertModalProps {
   open: boolean;

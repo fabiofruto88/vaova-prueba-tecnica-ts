@@ -60,7 +60,11 @@ const CardTopHotel: React.FC<Props> = ({
             alt={name}
             width="100%"
             height="100%"
-            style={{ objectFit: "cover", background: "transparent" }}
+            style={{
+              aspectRatio: "1 / 1",
+              objectFit: "cover",
+              background: "transparent",
+            }}
           />
         </Box>
         <Stack
