@@ -1,11 +1,12 @@
 # 🏨 VAOVA - Sistema de Gestión de Hoteles
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-99. 2%25-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![React](https://img. shields.io/badge/React-19.1.1-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-99.2%25-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19.1.1-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-7.1.7-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![MUI](https://img.shields.io/badge/Material_UI-7.3.2-007FFF?logo=mui&logoColor=white)](https://mui.com/)
-[![Framer Motion](https://img. shields.io/badge/Framer_Motion-12.23.24-0055FF?logo=framer&logoColor=white)](https://www.framer.com/motion/)
-[![React Hook Form](https://img.shields.io/badge/React_Hook_Form-7.66.1-EC5990?logo=reacthookform&logoColor=white)](https://react-hook-form. com/)
+[![Framer Motion](https://img.shields.io/badge/Framer_Motion-12.23.24-0055FF?logo=framer&logoColor=white)](https://www.framer.com/motion/)
+[![React Hook Form](https://img.shields.io/badge/React_Hook_Form-7.66.1-EC5990?logo=reacthookform&logoColor=white)](https://react-hook-form.com/)
+
 
 > **Prueba Técnica VAOVA** - Aplicación web completa para la gestión integral de hoteles en convenio con planes turísticos, desarrollada con React 19, TypeScript y arquitectura escalable.
 
