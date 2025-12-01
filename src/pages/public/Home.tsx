@@ -274,9 +274,14 @@ const Home: React.FC = () => {
       </Box>
       <Stack
         width="100%"
-        height="30dvh"
         bgcolor="primary.main"
-        sx={{ justifyContent: "center" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: { xs: "auto", md: "30dvh" },
+          py: { xs: 6, md: 0 },
+        }}
       >
         <Container maxWidth="md">
           <motion.div
@@ -288,13 +293,28 @@ const Home: React.FC = () => {
             <Box sx={{ textAlign: "center" }}>
               <Typography
                 variant="h3"
-                sx={{ color: "white", fontWeight: 700, mb: 2 }}
+                sx={{
+                  color: "white",
+                  fontWeight: 700,
+                  mb: 2,
+                  fontSize: {
+                    xs: "1.25rem",
+                    sm: "1.5rem",
+                    md: "2rem",
+                    lg: "2.25rem",
+                  },
+                }}
               >
                 ¿Listo para unirte a VAOVA?
               </Typography>
               <Typography
                 variant="h6"
-                sx={{ color: "rgba(255,255,255,0.8)", mb: 4, fontWeight: 400 }}
+                sx={{
+                  color: "rgba(255,255,255,0.9)",
+                  mb: 3,
+                  fontWeight: 400,
+                  fontSize: { xs: "0.85rem", sm: "0.95rem", md: "1.125rem" },
+                }}
               >
                 Únete a más de {hotels.length} hoteles que ya confían en nuestra
                 plataforma
@@ -305,9 +325,11 @@ const Home: React.FC = () => {
                 sx={{
                   bgcolor: "white",
                   color: "primary.main",
-                  px: 5,
-                  py: 1.5,
-                  fontSize: "1rem",
+                  px: { xs: 3, sm: 4, md: 5 },
+                  py: { xs: 1, md: 1.5 },
+                  fontSize: { xs: "0.95rem", md: "1rem" },
+                  width: { xs: "100%", sm: "auto" },
+                  maxWidth: { xs: "380px" },
                   "&:hover": { bgcolor: "rgba(255,255,255,0.9)" },
                 }}
                 onClick={() => {

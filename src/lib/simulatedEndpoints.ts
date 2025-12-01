@@ -911,7 +911,10 @@ export const getAdminStats = async (): Promise<AdminStats> => {
   const rooms = getFromStorage<Room>(STORAGE_KEYS.ROOMS);
 
   // Total de habitaciones (sumando todas las disponibles)
-  const totalRooms = rooms.reduce((sum, room) => sum + room.available, 0);
+  const totalRooms = rooms.reduce(
+    (sum, room) => sum + Number(room.available ?? 0),
+    0
+  );
 
   // Score promedio
   const averageScore =

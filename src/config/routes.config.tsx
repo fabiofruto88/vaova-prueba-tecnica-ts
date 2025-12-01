@@ -4,7 +4,7 @@ import Home from "../pages/public/Home";
 import Login from "../pages/public/Login";
 import Dashboard from "../pages/admin/Dashboard";
 import Hotels from "../pages/admin/hotels";
-
+import HotelPage from "../pages/public/hotel";
 import Register from "../pages/public/register";
 import MyHotel from "../pages/hotel/myHotel";
 import MyRooms from "../pages/hotel/rooms";
@@ -31,6 +31,13 @@ export const routes: RouteConfig[] = [
     isPublic: true,
     layout: "public",
     name: "Registrarse",
+  },
+  {
+    path: "/hotel/:id",
+    component: <HotelPage />,
+    isPublic: true,
+    layout: "public",
+    name: "Hotel",
   },
 
   // ==========================================

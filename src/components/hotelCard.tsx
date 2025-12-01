@@ -7,6 +7,7 @@ import {
   Chip,
   Rating,
   Button,
+  useTheme,
 } from "@mui/material";
 import { LocationOn, Star } from "@mui/icons-material";
 import { motion } from "framer-motion";
@@ -32,6 +33,8 @@ interface HotelCardProps {
 }
 
 export default function HotelCard({ hotel, index = 0 }: HotelCardProps) {
+  const theme = useTheme();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -60,7 +63,9 @@ export default function HotelCard({ hotel, index = 0 }: HotelCardProps) {
             sx={{ objectFit: "cover" }}
           />
           <Chip
-            icon={<Star sx={{ fontSize: 16, color: "#ffc107 !important" }} />}
+            icon={
+              <Star sx={{ fontSize: 16, color: theme.palette.primary.main }} />
+            }
             label={hotel.score.toFixed(1)}
             size="small"
             sx={{
