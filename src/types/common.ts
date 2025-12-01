@@ -1,3 +1,5 @@
+import type { RoomType } from "../utils/constants";
+
 export type AlertType =
   | "info"
   | "error"
@@ -24,4 +26,13 @@ export interface CreateHotelFormData {
   state: string;
   city: string;
   stars: 1 | 2 | 3 | 4 | 5;
+}
+export interface CreateRoomFormData {
+  name: string;
+  type: RoomType;
+  price: number;
+  available: number;
+  description?: string;
+  images: string[];
+  amenities: string[];
 }

@@ -447,9 +447,24 @@ export const deleteHotelByAdmin = async (
 /**
  * GET /api/hotels
  */
-export const getHotels = async (): Promise<Hotel[]> => {
+export const getHotels = async (): Promise<
+  Array<Hotel & { totalRooms: number }>
+> => {
   await simulateNetworkDelay();
-  return getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
+
+  const hotels = getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
+  const rooms = getFromStorage<Room>(STORAGE_KEYS.ROOMS);
+
+  return hotels.map((hotel) => {
+    const total = rooms
+      .filter((r) => r.hotelId === hotel.id)
+      .reduce((sum, r) => sum + (Number(r.available) || 0), 0);
+
+    return {
+      ...hotel,
+      totalRooms: total,
+    };
+  });
 };
 
 /**
@@ -545,6 +560,59 @@ export const getHotelWithRooms = async (
     ...hotel,
     rooms,
   };
+};
+
+export const getHotelGallery = async (id: string): Promise<string[]> => {
+  await simulateNetworkDelay();
+
+  const hotel = await getHotelById(id);
+
+  return hotel.gallery || [];
+};
+
+export const updateHotelGallery = async (
+  id: string,
+  gallery: string[]
+): Promise<Hotel> => {
+  await simulateNetworkDelay();
+
+  // Requiere autenticación
+  await getCurrentUser();
+
+  if (!Array.isArray(gallery)) {
+    throw {
+      error: true,
+      message: "Gallery must be an array of strings",
+      statusCode: 400,
+    } as ApiError;
+  }
+
+  const hotels = getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
+  const index = hotels.findIndex((h) => h.id === id);
+
+  if (index === -1) {
+    throw {
+      error: true,
+      message: "Hotel not found",
+      statusCode: 404,
+    } as ApiError;
+  }
+
+  // Sanitizar: aceptar solo strings no vacías
+  const sanitized = gallery
+    .filter((g) => typeof g === "string")
+    .map((g) => g.trim())
+    .filter((g) => g.length > 0);
+
+  hotels[index] = {
+    ...hotels[index],
+    gallery: sanitized,
+    updatedAt: new Date().toISOString(),
+  };
+
+  saveToStorage(STORAGE_KEYS.HOTELS, hotels);
+
+  return hotels[index];
 };
 
 /*

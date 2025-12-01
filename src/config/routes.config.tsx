@@ -7,6 +7,8 @@ import Hotels from "../pages/admin/hotels";
 
 import Register from "../pages/public/register";
 import MyHotel from "../pages/hotel/myHotel";
+import MyRooms from "../pages/hotel/rooms";
+import Gallery from "../pages/hotel/gallery";
 
 export const routes: RouteConfig[] = [
   {
@@ -53,6 +55,18 @@ export const routes: RouteConfig[] = [
     layout: "authenticated",
   },
 
+  {
+    path: "/hotel/rooms",
+    component: <MyRooms />,
+    name: "Mis Habitaciones",
+    layout: "authenticated",
+  },
+  {
+    path: "/hotel/gallery",
+    component: <Gallery />,
+    name: "Galería",
+    layout: "authenticated",
+  },
   /*  {
     path: "/perfil",
     component: <Profile />,
