@@ -42,9 +42,9 @@ export const register = async (
   }
 
   // Crear nuevo usuario (solo hoteles pueden registrarse)
-  const userId = `user-${Date.now()}`;
+  const userId = `hotel-${Date.now()}`;
   const newUser: User = {
-    id: userId,
+    id: `user-${userId}`,
     name: data.name,
     email: data.email,
     password: data.password,
@@ -61,7 +61,7 @@ export const register = async (
   const hotels = getFromStorage<Hotel>(STORAGE_KEYS.HOTELS);
 
   const newHotel: Hotel = {
-    id: `hotel-${Date.now()}`,
+    id: userId,
     name: data.name, // Mismo nombre del usuario
     description: "",
     country: "",

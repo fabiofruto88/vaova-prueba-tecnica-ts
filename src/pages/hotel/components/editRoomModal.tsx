@@ -206,7 +206,7 @@ const EditRoomModal: React.FC<EditRoomModalProps> = ({
           Editar Habitación
         </Typography>
         <IconButton onClick={handleClose} size="small">
-          <XMarkIcon className="h-6 w-6" />
+          <XMarkIcon width={20} />
         </IconButton>
       </DialogTitle>
 
@@ -362,7 +362,7 @@ const EditRoomModal: React.FC<EditRoomModalProps> = ({
                         }}
                         onClick={() => handleRemoveExistingImage(index)}
                       >
-                        <XMarkIcon className="h-4 w-4" />
+                        <XMarkIcon width={20} />
                       </IconButton>
                     </Box>
                   ))}
@@ -445,7 +445,7 @@ const EditRoomModal: React.FC<EditRoomModalProps> = ({
                         }}
                         onClick={() => handleRemoveNewImage(index)}
                       >
-                        <XMarkIcon width={15} />
+                        <XMarkIcon width={20} />
                       </IconButton>
                     </Box>
                   ))}
